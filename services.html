@@ -10,12 +10,13 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
 /* Base Styles */
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; overflow-x: hidden; max-width: 100vw; }
 body {
     font-family: 'Inter', sans-serif;
     background: #020617;
     color: white;
     overflow-x: hidden;
+    max-width: 100vw;
 }
 
 /* Welcome Animation */
@@ -68,8 +69,8 @@ body {
     pointer-events: none;
 }
 .welcome-image {
-    width: 280px;
-    height: 280px;
+    width: clamp(150px, 50vw, 280px);
+    height: clamp(150px, 50vw, 280px);
     object-fit: cover;
     border-radius: 50%;
     margin-bottom: 2rem;
@@ -224,8 +225,10 @@ nav {
 </head>
 <body>
 <!-- Background Glows -->
-<div class="bg-glow"></div>
-<div class="bg-glow-2"></div>
+<div class="fixed inset-0 overflow-hidden pointer-events-none z-[-1]">
+    <div class="bg-glow"></div>
+    <div class="bg-glow-2"></div>
+</div>
 
 
 <!-- Navigation -->

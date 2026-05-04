@@ -10,12 +10,13 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
 /* Base Styles */
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; overflow-x: hidden; max-width: 100vw; }
 body {
     font-family: 'Inter', sans-serif;
     background: #020617;
     color: white;
     overflow-x: hidden;
+    max-width: 100vw;
 }
 
 /* Welcome Animation */
@@ -68,8 +69,8 @@ body {
     pointer-events: none;
 }
 .welcome-image {
-    width: 280px;
-    height: 280px;
+    width: clamp(150px, 50vw, 280px);
+    height: clamp(150px, 50vw, 280px);
     object-fit: cover;
     border-radius: 50%;
     margin-bottom: 2rem;
@@ -226,15 +227,20 @@ nav {
 <!-- Welcome Animation -->
 <div id="welcome-screen">
     <img src="cyber_cafe_bg.jpg" alt="Welcome to Ranjeet Cyber Cafe" class="welcome-image">
-    <div class="welcome-logo">Ranjeet Cyber Cafe</div>
+    <div class="welcome-logo flex flex-col items-center justify-center text-center leading-none px-4 w-full">
+        <span class="text-[clamp(2.5rem,10vw,4rem)] font-black mb-1">RANJEET</span>
+        <span class="text-[clamp(1.2rem,5vw,2rem)] tracking-[0.2em] md:tracking-[0.3em]">CYBER CAFE</span>
+    </div>
     <div class="loader-bar"><div class="loader-fill"></div></div>
     <p class="mt-4 text-slate-400 text-sm tracking-widest uppercase font-bold text-cyan-400 drop-shadow-md">System Initializing...</p>
 </div>
 
 
 <!-- Background Glows -->
-<div class="bg-glow"></div>
-<div class="bg-glow-2"></div>
+<div class="fixed inset-0 overflow-hidden pointer-events-none z-[-1]">
+    <div class="bg-glow"></div>
+    <div class="bg-glow-2"></div>
+</div>
 
 
 <!-- Navigation -->
