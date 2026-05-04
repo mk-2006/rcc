@@ -294,11 +294,11 @@ nav {
                     </select>
                 </div>
             </div>
-            <div class="flex flex-wrap justify-end gap-4 mt-6 pt-4 border-t border-slate-800/50">
-                <button onclick="resetFilters()" class="px-6 py-2.5 text-slate-400 hover:text-white transition font-semibold flex items-center gap-2">
+            <div class="flex flex-col sm:flex-row justify-end gap-4 mt-6 pt-4 border-t border-slate-800/50">
+                <button onclick="resetFilters()" class="px-6 py-3 sm:py-2.5 text-slate-400 hover:text-white transition font-semibold flex items-center justify-center gap-2 bg-slate-800/50 sm:bg-transparent rounded-lg sm:rounded-none">
                     <i class="fa-solid fa-rotate-left"></i> Reset All
                 </button>
-                <button onclick="refreshData()" class="px-6 py-2.5 bg-cyan-500 text-slate-900 font-bold rounded-lg hover:bg-cyan-400 transition flex items-center gap-2 shadow-[0_0_15px_rgba(0,255,255,0.3)]">
+                <button onclick="refreshData()" class="px-6 py-3 sm:py-2.5 bg-cyan-500 text-slate-900 font-bold rounded-lg hover:bg-cyan-400 transition flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(0,255,255,0.3)]">
                     <i class="fa-solid fa-check" id="refresh-icon"></i> Apply Filters
                 </button>
             </div>
