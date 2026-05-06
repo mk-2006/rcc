@@ -34,5 +34,23 @@ const sarkariData = {
         { title: "CISCE ISC, ICSE 10th, 12th Result 2026 – Declared", link: "https://www.sarkariexam.com/cisce-isc-icse-result-2026/" },
         { title: "SSC Delhi Police Driver Result 2026", link: "https://www.sarkariexam.com/ssc-delhi-police-driver-2026/" },
         { title: "Chhattisgarh Board Class 10th & 12th Result 2026 – Declared", link: "https://www.sarkariexam.com/chhattisgarh-board-result-2026/" }
+    ],
+    answerKeys: [
+        { title: "SSC CHSL Answer Key", link: "https://ssc.gov.in/" },
+        { title: "Railway NTPC Answer Key", link: "https://www.rrbapply.gov.in/" },
+        { title: "CTET Answer Key", link: "https://ctet.nic.in/" },
+        { title: "UP Police Answer Key", link: "https://uppbpb.gov.in/" }
+    ],
+    admissions: [
+        { title: "CUET Admission", link: "https://cuet.samarth.ac.in/" },
+        { title: "NEET Admission", link: "https://neet.nta.nic.in/" },
+        { title: "JEE Main Admission", link: "https://jeemain.nta.nic.in/" },
+        { title: "IGNOU Admission", link: "https://ignouadmission.samarth.edu.in/" }
+    ],
+    importantLinks: [
+        { title: "SSC Official Website", link: "https://ssc.gov.in/" },
+        { title: "UPSC Official Website", link: "https://upsconline.nic.in/" },
+        { title: "IBPS Official Website", link: "https://www.ibps.in/" },
+        { title: "Railway Recruitment", link: "https://www.rrbapply.gov.in/#/auth/landing" }
     ]
 };
