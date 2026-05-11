@@ -5,14 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ranjeet Cyber Cafe</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400&display=swap" rel="stylesheet">
 <!-- Icons -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
 /* Base Styles */
 html { scroll-behavior: smooth; overflow-x: hidden; max-width: 100vw; }
 body {
-    font-family: 'Inter', sans-serif;
+    font-family: 'Playfair Display', serif;
     background: #020617;
     color: white;
     overflow-x: hidden;
@@ -32,6 +32,7 @@ body {
     transition: transform 0.8s cubic-bezier(0.77, 0, 0.175, 1), opacity 0.8s ease;
 }
 .welcome-logo {
+    font-family: 'Playfair Display', serif;
     font-size: 3rem;
     font-weight: 900;
     text-transform: uppercase;
@@ -277,6 +278,7 @@ nav {
             <a href="index.html" class="nav-link active" data-tab="home">Home</a>
             <a href="services.html" class="nav-link" data-tab="services">Services</a>
             <a href="updates.html" class="nav-link" data-tab="sarkari">Updates</a>
+            <a href="print.html" class="nav-link" data-tab="print">Print Tools</a>
             <a href="contact.html" class="nav-link" data-tab="contact">Contact</a>
             <a href="booking.html" class="px-5 py-2 bg-violet-600 text-white font-bold rounded-lg hover:bg-violet-500 transition shadow-[0_0_10px_rgba(139,92,246,0.4)]">Book Now</a>
         </div>
@@ -295,6 +297,7 @@ nav {
             <a href="index.html" class="nav-link active" data-tab="home">Home</a>
             <a href="services.html" class="nav-link" data-tab="services">Services</a>
             <a href="updates.html" class="nav-link" data-tab="sarkari">Updates</a>
+            <a href="print.html" class="nav-link" data-tab="print">Print Tools</a>
             <a href="contact.html" class="nav-link" data-tab="contact">Contact</a>
             <a href="booking.html" class="text-violet-400">Book Now</a>
         </div>
@@ -330,14 +333,16 @@ nav {
                 </div>
 
                 <div class="flex flex-col sm:flex-row gap-4 justify-center">
+		    <button onclick="window.location.href='services.html'" class="px-8 py-3.5 bg-slate-900/60 backdrop-blur-md border-2 border-slate-500 text-white font-bold rounded-full hover:border-violet-400 hover:text-violet-400 hover:bg-slate-900/80 transition transform hover:-translate-y-1 shadow-lg text-lg">Our Services</button>
                     <button onclick="window.location.href='updates.html'" class="px-8 py-3.5 bg-cyan-500 text-slate-900 font-bold rounded-full hover:bg-cyan-400 transition transform hover:-translate-y-1 shadow-[0_0_20px_rgba(0,255,255,0.5)] text-lg">View Job Updates</button>
-                    <button onclick="window.location.href='services.html'" class="px-8 py-3.5 bg-slate-900/60 backdrop-blur-md border-2 border-slate-500 text-white font-bold rounded-full hover:border-violet-400 hover:text-violet-400 hover:bg-slate-900/80 transition transform hover:-translate-y-1 shadow-lg text-lg">Our Services</button>
+                    <button onclick="window.location.href='print.html'" class="px-8 py-3.5 bg-slate-900/60 backdrop-blur-md border-2 border-slate-500 text-white font-bold rounded-full hover:border-violet-400 hover:text-violet-400 hover:bg-slate-900/80 transition transform hover:-translate-y-1 shadow-lg text-lg">Print Your Doc</button>
                 </div>
             </div>
         </div>
 
+
         <!-- ABOUT ME SECTION -->
-        <div id="about-me" class="mt-10 border-t border-slate-800 pt-20 pb-10">
+        <div id="about-me" class="mt-20 border-t border-slate-800 pt-20 pb-10">
             <div class="flex flex-col md:flex-row items-center gap-12 bg-slate-900/50 p-8 md:p-12 rounded-3xl border border-slate-800 backdrop-blur-md shadow-2xl relative overflow-hidden">
                 <div class="absolute top-0 right-0 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none"></div>
                 <div class="w-40 h-40 md:w-64 md:h-64 mx-auto md:mx-0 shrink-0 rounded-full border-4 border-slate-800 overflow-hidden shadow-[0_0_30px_rgba(0,255,255,0.2)]">
@@ -579,6 +584,8 @@ nav {
             });
         }, 1000);
     }
+
+
 </script>
 
 <!-- Antigravity Mouse Track Effect -->
