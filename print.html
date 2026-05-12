@@ -65,10 +65,10 @@ body { font-family: 'Outfit', sans-serif; background: #020617; color: white; ove
     </div>
 </nav>
 
-<div class="flex flex-1 overflow-hidden relative">
+<div class="flex flex-1 flex-col-reverse md:flex-row overflow-hidden relative">
 
 <!-- Left Sidebar -->
-<aside class="w-80 bg-slate-900/60 backdrop-blur-xl border-r border-slate-800 flex flex-col z-20 shadow-xl shrink-0">
+<aside class="w-full md:w-80 h-[45vh] md:h-auto bg-slate-900/60 backdrop-blur-xl border-t md:border-r md:border-t-0 border-slate-800 flex flex-col z-20 shadow-xl shrink-0">
     <!-- Controls -->
     <div class="flex-1 overflow-y-auto p-5 space-y-6">
         <!-- 1. Select Type -->
@@ -142,7 +142,7 @@ body { font-family: 'Outfit', sans-serif; background: #020617; color: white; ove
 </aside>
 
 <!-- Main Area (A4 Preview) -->
-<main id="mainArea" class="flex-1 relative overflow-x-auto overflow-y-hidden flex items-center snap-x snap-mandatory bg-[#020617] scroll-smooth hide-scrollbar">
+<main id="mainArea" class="flex-1 relative overflow-x-auto overflow-y-hidden flex items-center snap-x snap-mandatory bg-[#020617] hide-scrollbar min-h-[40vh] md:min-h-0">
     <!-- Background Glow inside Main Area -->
     <div class="fixed inset-0 overflow-hidden pointer-events-none z-0 flex items-center justify-center">
         <div class="w-[500px] h-[500px] bg-cyan-500/10 rounded-full blur-[100px]"></div>
@@ -162,7 +162,7 @@ body { font-family: 'Outfit', sans-serif; background: #020617; color: white; ove
 
 
 <!-- Editor Modal -->
-<div id="editorModal" class="fixed inset-0 z-[100] hidden bg-[#020617]/90 backdrop-blur-xl flex transition-all">
+<div id="editorModal" class="fixed inset-0 z-[100] hidden bg-[#020617]/90 backdrop-blur-xl flex flex-col md:flex-row transition-all">
     <!-- Magnifier Canvas (Appears on drag) -->
     <canvas id="magnifier" width="180" height="180"></canvas>
 
@@ -182,7 +182,7 @@ body { font-family: 'Outfit', sans-serif; background: #020617; color: white; ove
     </div>
 
     <!-- Right Sidebar Adjustments -->
-    <div class="w-80 bg-slate-900/80 backdrop-blur-md flex-col shrink-0 border-l border-slate-800 shadow-2xl z-50 flex">
+    <div class="w-full md:w-80 h-[50vh] md:h-full bg-slate-900/80 backdrop-blur-md flex-col shrink-0 border-t md:border-t-0 md:border-l border-slate-800 shadow-2xl z-50 flex">
         <div class="h-16 flex items-center justify-between px-6 border-b border-slate-800">
             <span class="text-slate-200 font-bold text-sm">ADJUST</span>
             <div class="flex gap-2">
@@ -349,10 +349,16 @@ function openEditor() {
     document.getElementById('editorModal').classList.remove('hidden');
     
     // Fit image to screen workspace area
-    const maxW = window.innerWidth - 320 - 100; // Account for right sidebar and padding
-    const maxH = window.innerHeight - 100;
+    const isMobile = window.innerWidth < 768;
+    const sidebarW = isMobile ? 0 : 320;
+    const sidebarH = isMobile ? window.innerHeight * 0.5 : 0;
+    const padX = isMobile ? 40 : 100;
+    const padY = isMobile ? 40 : 100;
     
-    scaleFactor = Math.min(maxW / rawImageObj.width, maxH / rawImageObj.height);
+    const maxW = window.innerWidth - sidebarW - padX;
+    const maxH = window.innerHeight - sidebarH - padY;
+    
+    scaleFactor = Math.min(Math.max(10, maxW) / rawImageObj.width, Math.max(10, maxH) / rawImageObj.height);
     if (scaleFactor > 1) scaleFactor = 1; // Prevent upscale blurring
     
     cropCanvas.width = rawImageObj.width * scaleFactor;
@@ -741,6 +747,10 @@ let activeItemResize = null;
 function renderA4() {
     const container = document.getElementById('pagesContainer');
     if (!container) return;
+    
+    const main = document.getElementById('mainArea');
+    const currentScroll = main ? main.scrollLeft : 0;
+
     container.innerHTML = '';
     
     pages.forEach((pageItems, pIndex) => {
@@ -798,6 +808,9 @@ function renderA4() {
     }).join('');
     
     resizeA4();
+    if (main) {
+        main.scrollLeft = currentScroll;
+    }
 }
 
 function startItemDrag(e, id, pIndex) {
