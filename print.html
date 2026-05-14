@@ -1,820 +1,1030 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RCC Auto Suite - ID Card Printer</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-<!-- jsPDF for Save PDF functionality -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<style>
-/* Base Styles */
-body { font-family: 'Outfit', sans-serif; background: #020617; color: white; overflow: hidden; touch-action: none; user-select: none; }
-.range-slider { -webkit-appearance: none; width: 100%; background: transparent; height: 6px; border-radius: 3px; background: #1e293b; }
-.range-slider::-webkit-slider-thumb { -webkit-appearance: none; height: 18px; width: 18px; border-radius: 50%; background: #00ffff; box-shadow: 0 0 10px rgba(0,255,255,0.4); cursor: pointer; border: none; margin-top: -6px;}
-.doc-btn.active { background-color: rgba(0, 255, 255, 0.1); border: 1px solid #00ffff; box-shadow: 0 0 15px rgba(0, 255, 255, 0.15); color: #00ffff; }
-.doc-btn { border: 1px solid rgba(255,255,255,0.05); transition: all 0.2s; background: rgba(15, 23, 42, 0.6); color: #cbd5e1; }
-.doc-btn:hover:not(.active) { background: rgba(15, 23, 42, 0.9); border-color: #8b5cf6; color: #8b5cf6; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RCC Auto Suite - ID Card Printer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&family=Orbitron:wght@500;700;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- jsPDF for Save PDF functionality -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        /* Base Styles */
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: #020617;
+            color: white;
+            overflow: hidden;
+            touch-action: none;
+            user-select: none;
+        }
 
-/* Magnifier */
-#magnifier { position: fixed; border-radius: 50%; border: 2px solid #00ffff; box-shadow: 0 0 20px rgba(0,255,255,0.4); pointer-events: none; z-index: 100; background: #020617; display: none; }
+        .range-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+            height: 6px;
+            border-radius: 3px;
+            background: #1e293b;
+        }
 
-/* Print Styles */
-@media print {
-    body > *:not(#printContainer) { display: none !important; }
-    #printContainer { display: block !important; position: absolute; top: 0; left: 0; width: 100%; z-index: 99999; }
-    @page { margin: 0; size: auto; }
-}
+        .range-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 18px;
+            width: 18px;
+            border-radius: 50%;
+            background: #00ffff;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.4);
+            cursor: pointer;
+            border: none;
+            margin-top: -6px;
+        }
 
-/* Loader */
-.loader { border: 3px solid #1e293b; border-top: 3px solid #00ffff; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; }
-@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .doc-btn.active {
+            background-color: rgba(0, 255, 255, 0.1);
+            border: 1px solid #00ffff;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.15);
+            color: #00ffff;
+        }
 
-/* Custom Scrollbar */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #475569; }
-.hide-scrollbar::-webkit-scrollbar { display: none; }
-.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-</style>
+        .doc-btn {
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.2s;
+            background: rgba(15, 23, 42, 0.6);
+            color: #cbd5e1;
+        }
+
+        .doc-btn:hover:not(.active) {
+            background: rgba(15, 23, 42, 0.9);
+            border-color: #8b5cf6;
+            color: #8b5cf6;
+        }
+
+        /* Navbar */
+        nav {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #1e293b;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .nav-link {
+            cursor: pointer;
+            transition: 0.3s;
+            position: relative;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0%;
+            height: 2px;
+            background: #00ffff;
+            transition: 0.3s;
+        }
+
+        .nav-link:hover::after,
+        .nav-link.active::after {
+            width: 100%;
+        }
+
+        .nav-link.active {
+            color: #00ffff;
+        }
+
+        /* Animated Hamburger & Menu */
+        #mobile-toggle-btn.hamburger-open span:nth-child(1) {
+            transform: translateY(8px) rotate(45deg);
+        }
+
+        #mobile-toggle-btn.hamburger-open span:nth-child(2) {
+            opacity: 0;
+        }
+
+        #mobile-toggle-btn.hamburger-open span:nth-child(3) {
+            transform: translateY(-8px) rotate(-45deg);
+        }
+
+        #mobile-menu {
+            transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            max-height: 0;
+            opacity: 0;
+        }
+
+        #mobile-menu.menu-open {
+            max-height: 500px;
+            opacity: 1;
+        }
+
+        /* Magnifier */
+        #magnifier {
+            position: fixed;
+            border-radius: 50%;
+            border: 2px solid #00ffff;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.4);
+            pointer-events: none;
+            z-index: 100;
+            background: #020617;
+            display: none;
+        }
+
+        /* Print Styles */
+        @media print {
+            body>*:not(#printContainer) {
+                display: none !important;
+            }
+
+            #printContainer {
+                display: block !important;
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                z-index: 99999;
+            }
+
+            @page {
+                margin: 0;
+                size: auto;
+            }
+        }
+
+        /* Loader */
+        .loader {
+            border: 3px solid #1e293b;
+            border-top: 3px solid #00ffff;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
 </head>
+
 <body class="flex flex-col h-screen text-slate-200 bg-[#020617]">
 
-<!-- Print Container (Hidden in UI, only visible when printing) -->
-<div id="printContainer" class="hidden bg-white w-full min-h-screen"></div>
+    <!-- Print Container (Hidden in UI, only visible when printing) -->
+    <div id="printContainer" class="hidden bg-white w-full min-h-screen"></div>
 
-<!-- Loading Screen for OpenCV -->
-<div id="loaderScreen" class="fixed inset-0 bg-[#020617] z-[100] flex flex-col items-center justify-center">
-    <div class="loader mb-4"></div>
-    <p id="loaderText" class="text-xs text-cyan-400 font-bold tracking-widest drop-shadow-[0_0_5px_rgba(0,255,255,0.5)]">LOADING OPENCV ENGINE...</p>
-</div>
-
-<!-- Global Navbar -->
-<nav class="py-3 bg-slate-900/80 backdrop-blur-md border-b border-slate-800 z-50 shrink-0">
-    <div class="px-6 flex justify-between items-center">
-        <a href="index.html" class="text-xl font-black tracking-wider flex items-center gap-2 hover:scale-105 transition-transform duration-300 drop-shadow-[0_0_10px_rgba(0,255,255,0.8)] text-white">
-            <i class="fa-solid fa-microchip text-cyan-400"></i>
-            RCC<span class="text-cyan-400">.</span> Auto Suite
-        </a>
-
-
-
+    <!-- Loading Screen for OpenCV -->
+    <div id="loaderScreen" class="fixed inset-0 bg-[#020617] z-[100] flex flex-col items-center justify-center">
+        <div class="loader mb-4"></div>
+        <p id="loaderText"
+            class="text-xs text-cyan-400 font-bold tracking-widest drop-shadow-[0_0_5px_rgba(0,255,255,0.5)]">LOADING
+            YOUR DOCUMENT ENGINE...</p>
+    </div>
 
     <!-- Navigation -->
-    <nav class="py-4">
+    <nav class="py-4 shrink-0">
         <div class="container mx-auto px-6 flex justify-between items-center">
-           
+            <a href="index.html" class="text-2xl font-black tracking-wider flex items-center gap-2 hover:scale-105 transition-transform duration-300 drop-shadow-[0_0_10px_rgba(0,255,255,0.8)] text-white">
+                <i class="fa-solid fa-microchip text-cyan-400"></i>
+                RCC<span class="text-cyan-400">.</span> Auto Suite
+            </a>
+            
             <!-- Desktop Nav -->
             <div class="hidden md:flex space-x-8 text-sm font-semibold text-slate-300 items-center">
                 <a href="index.html" class="nav-link" data-tab="home">Home</a>
-                <a href="services.html" class="nav-link active" data-tab="services">Services</a>
+                <a href="services.html" class="nav-link" data-tab="services">Services</a>
                 <a href="updates.html" class="nav-link" data-tab="sarkari">Updates</a>
-                <a href="print.html" class="nav-link" data-tab="print">Print Tools</a>
+                <a href="print.html" class="nav-link active" data-tab="print">Print Tools</a>
                 <a href="contact.html" class="nav-link" data-tab="contact">Contact</a>
-                <a href="booking.html"
-                    class="px-5 py-2 bg-violet-600 text-white font-bold rounded-lg hover:bg-violet-500 transition shadow-[0_0_10px_rgba(139,92,246,0.4)]">Book
-                    Now</a>
+                <a href="booking.html" class="px-5 py-2 bg-violet-600 text-white font-bold rounded-lg hover:bg-violet-500 transition shadow-[0_0_10px_rgba(139,92,246,0.4)]">Book Now</a>
             </div>
 
             <!-- Mobile Toggle -->
-            <button id="mobile-toggle-btn"
-                class="hamburger md:hidden focus:outline-none flex flex-col justify-center items-center w-8 h-8 gap-1.5 z-50"
-                onclick="toggleMobileMenu(event)">
+            <button id="mobile-toggle-btn" class="hamburger md:hidden focus:outline-none flex flex-col justify-center items-center w-8 h-8 gap-1.5 z-50" onclick="toggleMobileMenu(event)">
                 <span class="bg-slate-300 block transition-all duration-300 ease-out h-[2px] w-6 rounded-sm"></span>
                 <span class="bg-slate-300 block transition-all duration-300 ease-out h-[2px] w-6 rounded-sm"></span>
                 <span class="bg-slate-300 block transition-all duration-300 ease-out h-[2px] w-6 rounded-sm"></span>
             </button>
         </div>
-
+        
         <!-- Mobile Nav -->
-        <div id="mobile-menu"
-            class="md:hidden bg-slate-900 border-t border-slate-800 absolute w-full left-0 shadow-2xl z-40 top-full menu-closed overflow-hidden">
+        <div id="mobile-menu" class="md:hidden bg-slate-900 border-t border-slate-800 absolute w-full left-0 shadow-2xl z-40 top-full menu-closed overflow-hidden">
             <div class="flex flex-col px-6 py-4 space-y-4 font-semibold">
                 <a href="index.html" class="nav-link" data-tab="home">Home</a>
-                <a href="services.html" class="nav-link active" data-tab="services">Services</a>
+                <a href="services.html" class="nav-link" data-tab="services">Services</a>
                 <a href="updates.html" class="nav-link" data-tab="sarkari">Updates</a>
-                <a href="print.html" class="nav-link" data-tab="print">Print Tools</a>
+                <a href="print.html" class="nav-link active" data-tab="print">Print Tools</a>
                 <a href="contact.html" class="nav-link" data-tab="contact">Contact</a>
                 <a href="booking.html" class="text-violet-400">Book Now</a>
             </div>
         </div>
     </nav>
 
+    <div class="flex flex-1 flex-col-reverse md:flex-row overflow-hidden relative">
 
-
-
-        
-    </div>
-</nav>
-
-<div class="flex flex-1 flex-col-reverse md:flex-row overflow-hidden relative">
-
-<!-- Left Sidebar -->
-<aside class="w-full md:w-80 h-[45vh] md:h-auto bg-slate-900/60 backdrop-blur-xl border-t md:border-r md:border-t-0 border-slate-800 flex flex-col z-20 shadow-xl shrink-0">
-    <!-- Controls -->
-    <div class="flex-1 overflow-y-auto p-5 space-y-6">
-        <!-- 1. Select Type -->
-        <div>
-            <label class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2">1. Select Type</label>
-            <div class="grid grid-cols-3 gap-2 text-slate-300">
-                <button id="btnModeIdcard" onclick="setPrintMode('idcard')" class="doc-btn active flex flex-col items-center justify-center p-2 rounded-lg group">
-                    <i class="fa-solid fa-id-card text-xl mb-1"></i><span class="text-[10px] font-bold">ID Card</span>
-                </button>
-                <button id="btnModeLarge" onclick="setPrintMode('large')" class="doc-btn flex flex-col items-center justify-center p-2 rounded-lg group">
-                    <i class="fa-solid fa-address-card text-xl mb-1"></i><span class="text-[10px] font-bold">Large Doc</span>
-                </button>
-                <button id="btnModeA4" onclick="setPrintMode('a4')" class="doc-btn flex flex-col items-center justify-center p-2 rounded-lg group">
-                    <i class="fa-solid fa-file-lines text-xl mb-1"></i><span class="text-[10px] font-bold">A4 Page</span>
-                </button>
-            </div>
-            <label class="flex items-center gap-2 cursor-pointer bg-slate-800/50 p-2.5 rounded-lg mt-3 border border-slate-700 hover:border-cyan-500/50 transition-colors">
-                <input type="checkbox" id="singleSideMode" class="accent-cyan-400 w-4 h-4">
-                <span class="text-xs font-bold text-slate-300">Single Side Mode</span>
-            </label>
-        </div>
-
-        <!-- 2. Scan Documents -->
-        <div>
-            <div class="flex justify-between items-center mb-2">
-                <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">2. Scan Documents</label>
-                <button onclick="clearCurrent()" class="text-[10px] text-red-400 hover:text-red-300 font-bold">CLEAR</button>
-            </div>
-            <div class="bg-cyan-900/20 border border-cyan-500/30 rounded px-2 py-1.5 flex items-start gap-2 mb-3">
-                <i class="fa-solid fa-circle-info text-cyan-400 text-[10px] mt-0.5"></i>
-                <p class="text-[10px] text-cyan-200 leading-tight">Tip: Upload Front & Back to auto-crop them for A4.</p>
-            </div>
-            <div class="grid grid-cols-2 gap-3">
-                <div onclick="document.getElementById('uploadFront').click()" class="aspect-[1.6] relative rounded-lg border-2 border-dashed border-slate-600 hover:border-cyan-400 cursor-pointer flex flex-col items-center justify-center bg-slate-800/50 overflow-hidden group transition-colors">
-                    <img id="thumbFront" class="absolute inset-0 w-full h-full object-contain hidden z-10 bg-slate-900">
-                    <i class="fa-solid fa-camera text-2xl text-slate-500 group-hover:text-cyan-400 transition-colors"></i>
-                    <span class="text-[10px] mt-1 text-slate-400 font-bold group-hover:text-cyan-300">Front Side</span>
-                </div>
-                <div onclick="document.getElementById('uploadBack').click()" id="backBox" class="aspect-[1.6] relative rounded-lg border-2 border-dashed border-slate-600 hover:border-cyan-400 cursor-pointer flex flex-col items-center justify-center bg-slate-800/50 overflow-hidden group transition-colors">
-                    <img id="thumbBack" class="absolute inset-0 w-full h-full object-contain hidden z-10 bg-slate-900">
-                    <i class="fa-solid fa-rotate text-2xl text-slate-500 group-hover:text-cyan-400 transition-colors"></i>
-                    <span class="text-[10px] mt-1 text-slate-400 font-bold group-hover:text-cyan-300">Back Side</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- 3. Queue -->
-        <div class="pt-4 border-t border-slate-800">
-            <div class="flex justify-between items-center mb-2">
-                <label id="lblQueue" class="text-xs font-bold text-slate-400 uppercase tracking-wider">Page 1 Items</label>
-                <span class="text-[10px] font-bold text-slate-900 bg-cyan-400 px-2 py-0.5 rounded-full shadow-[0_0_5px_rgba(0,255,255,0.5)]">Ready</span>
-            </div>
-            <div id="queueList" class="min-h-[80px] max-h-[150px] overflow-y-auto bg-slate-800/30 rounded border border-slate-700 p-2 space-y-1">
-                <p class="text-[10px] text-slate-500 text-center py-4" id="emptyQueueMsg">Page Empty</p>
-            </div>
-            <div class="grid grid-cols-2 gap-2 mt-3">
-                <button onclick="addNewPage()" class="py-2.5 border border-cyan-500/50 text-cyan-400 rounded-lg text-xs font-bold hover:bg-cyan-500/10 transition-colors shadow-[0_0_10px_rgba(0,255,255,0.2)]"><i class="fa-solid fa-file-circle-plus"></i> NEW PAGE</button>
-                <button onclick="resetAll()" class="py-2.5 text-xs text-red-400 font-bold border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 rounded-lg transition-colors">RESET ALL</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Actions (Footer) -->
-    <div class="p-4 border-t border-slate-800 grid grid-cols-2 gap-3 bg-slate-900/80">
-        <button onclick="saveJPG()" class="py-2.5 bg-slate-800 border border-slate-600 rounded-lg text-xs font-bold text-slate-300 hover:border-cyan-400 hover:text-cyan-400 transition-colors shadow-sm">Save JPG</button>
-        <button onclick="savePDF()" class="py-2.5 bg-slate-800 border border-slate-600 rounded-lg text-xs font-bold text-slate-300 hover:border-violet-400 hover:text-violet-400 transition-colors shadow-sm">Save PDF</button>
-        <button onclick="printSheet()" class="col-span-2 py-3 bg-gradient-to-r from-cyan-500 to-violet-500 text-white rounded-lg text-sm font-bold shadow-[0_0_15px_rgba(139,92,246,0.4)] hover:shadow-[0_0_25px_rgba(0,255,255,0.5)] flex items-center justify-center gap-2 active:scale-95 transition-all">
-            <i class="fa-solid fa-print"></i> PRINT SHEET
-        </button>
-    </div>
-</aside>
-
-<!-- Main Area (A4 Preview) -->
-<main id="mainArea" class="flex-1 relative overflow-x-auto overflow-y-hidden flex items-center snap-x snap-mandatory bg-[#020617] hide-scrollbar min-h-[40vh] md:min-h-0">
-    <!-- Background Glow inside Main Area -->
-    <div class="fixed inset-0 overflow-hidden pointer-events-none z-0 flex items-center justify-center">
-        <div class="w-[500px] h-[500px] bg-cyan-500/10 rounded-full blur-[100px]"></div>
-    </div>
-    
-    <div id="pagesContainer" class="flex gap-10 h-full items-center min-w-max z-10 px-[30vw] py-10">
-        <!-- Pages rendered dynamically here -->
-    </div>
-
-    <!-- Page Indicator -->
-    <div class="fixed bottom-6 left-[calc(50%+160px)] -translate-x-1/2 flex items-center gap-4 bg-slate-900/90 backdrop-blur-xl border border-slate-700 px-6 py-3 rounded-full shadow-[0_0_20px_rgba(0,0,0,0.8)] z-50">
-        <button onclick="setActivePage(Math.max(0, activePageIndex - 1))" class="text-slate-400 hover:text-cyan-400 active:scale-90 transition-transform"><i class="fa-solid fa-chevron-left text-lg"></i></button>
-        <span id="pageIndicator" class="text-xs font-bold text-slate-200 tracking-widest uppercase">Page 1 of 1</span>
-        <button onclick="setActivePage(Math.min(pages.length - 1, activePageIndex + 1))" class="text-slate-400 hover:text-cyan-400 active:scale-90 transition-transform"><i class="fa-solid fa-chevron-right text-lg"></i></button>
-    </div>
-</main>
-
-
-<!-- Editor Modal -->
-<div id="editorModal" class="fixed inset-0 z-[100] hidden bg-[#020617]/90 backdrop-blur-xl flex flex-col md:flex-row transition-all">
-    <!-- Magnifier Canvas (Appears on drag) -->
-    <canvas id="magnifier" width="180" height="180"></canvas>
-
-    <!-- Canvas Workspace -->
-    <div class="flex-1 relative flex flex-col overflow-hidden bg-transparent cursor-crosshair" id="editorWorkspace">
-        <!-- Zoom Controls -->
-        <div class="absolute top-4 right-4 flex flex-col gap-2 z-40">
-            <button onclick="zoomEditor(1.1)" class="w-10 h-10 rounded-full bg-slate-800 text-slate-300 shadow-lg border border-slate-700 hover:text-cyan-400 hover:border-cyan-400 flex items-center justify-center active:scale-95 transition-colors"><i class="fa-solid fa-plus"></i></button>
-            <button onclick="zoomEditor(0.9)" class="w-10 h-10 rounded-full bg-slate-800 text-slate-300 shadow-lg border border-slate-700 hover:text-cyan-400 hover:border-cyan-400 flex items-center justify-center active:scale-95 transition-colors"><i class="fa-solid fa-minus"></i></button>
-            <div class="bg-slate-900 border border-slate-700 text-cyan-400 text-[10px] font-bold px-2 py-1 rounded-full text-center shadow-lg" id="zoomLabel">100%</div>
-        </div>
-        
-        <!-- The actual drawing area -->
-        <div id="canvasContainer" class="w-full h-full flex items-center justify-center overflow-auto p-10 relative">
-            <canvas id="cropCanvas" class="shadow-[0_0_40px_rgba(0,0,0,0.8)]" style="transform-origin: center center;"></canvas>
-        </div>
-    </div>
-
-    <!-- Right Sidebar Adjustments -->
-    <div class="w-full md:w-80 h-[50vh] md:h-full bg-slate-900/80 backdrop-blur-md flex-col shrink-0 border-t md:border-t-0 md:border-l border-slate-800 shadow-2xl z-50 flex">
-        <div class="h-16 flex items-center justify-between px-6 border-b border-slate-800">
-            <span class="text-slate-200 font-bold text-sm">ADJUST</span>
-            <div class="flex gap-2">
-                <button id="btnUpscale" onclick="toggleUpscale()" class="px-2 py-1 bg-slate-800 text-[10px] text-slate-300 rounded border border-slate-700 hover:border-cyan-400 font-bold transition-colors">HD</button>
-                <button onclick="rotateCrop()" class="px-2 py-1 bg-slate-800 text-[10px] text-slate-300 rounded border border-slate-700 hover:border-cyan-400 font-bold transition-colors" title="Rotate"><i class="fa-solid fa-rotate-right"></i></button>
-            </div>
-            <button onclick="closeEditor()" class="text-slate-400 hover:text-red-400 text-xs font-bold active:scale-95 transition-transform">CANCEL</button>
-        </div>
-        
-        <div class="flex-1 overflow-y-auto p-6 space-y-6">
-            <div class="flex bg-slate-800/50 p-1 rounded-xl border border-slate-700">
-                <button onclick="setFilter('orig')" id="filterOrig" class="flex-1 py-2.5 text-xs font-bold rounded-lg text-slate-400 hover:text-white transition-colors">Orig</button>
-                <button onclick="setFilter('magic')" id="filterMagic" class="flex-1 py-2.5 text-xs font-bold rounded-lg text-slate-900 bg-cyan-400 shadow-[0_0_10px_rgba(0,255,255,0.4)] transition-colors">Magic</button>
-                <button onclick="setFilter('bw')" id="filterBW" class="flex-1 py-2.5 text-xs font-bold rounded-lg text-slate-400 hover:text-white transition-colors">B&W</button>
-            </div>
-            
-            <div class="space-y-5">
+        <!-- Left Sidebar -->
+        <aside
+            class="w-full md:w-80 h-[45vh] md:h-auto bg-slate-900/60 backdrop-blur-xl border-t md:border-r md:border-t-0 border-slate-800 flex flex-col z-20 shadow-xl shrink-0">
+            <!-- Controls -->
+            <div class="flex-1 overflow-y-auto p-5 space-y-6">
+                <!-- 1. Select Type -->
                 <div>
-                    <div class="flex justify-between text-xs font-bold text-slate-400 mb-3">
-                        <span>Brightness</span> <span id="valBright" class="text-cyan-400">10</span>
+                    <label class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2">1. Select
+                        Type</label>
+                    <div class="grid grid-cols-3 gap-2 text-slate-300">
+                        <button id="btnModeIdcard" onclick="setPrintMode('idcard')"
+                            class="doc-btn active flex flex-col items-center justify-center p-2 rounded-lg group">
+                            <i class="fa-solid fa-id-card text-xl mb-1"></i><span class="text-[10px] font-bold">ID
+                                Card</span>
+                        </button>
+                        <button id="btnModeLarge" onclick="setPrintMode('large')"
+                            class="doc-btn flex flex-col items-center justify-center p-2 rounded-lg group">
+                            <i class="fa-solid fa-address-card text-xl mb-1"></i><span
+                                class="text-[10px] font-bold">Large Doc</span>
+                        </button>
+                        <button id="btnModeA4" onclick="setPrintMode('a4')"
+                            class="doc-btn flex flex-col items-center justify-center p-2 rounded-lg group">
+                            <i class="fa-solid fa-file-lines text-xl mb-1"></i><span class="text-[10px] font-bold">A4
+                                Page</span>
+                        </button>
                     </div>
-                    <input type="range" min="-50" max="80" value="10" id="inpBright" class="range-slider" oninput="updateFilters()">
+                    <label
+                        class="flex items-center gap-2 cursor-pointer bg-slate-800/50 p-2.5 rounded-lg mt-3 border border-slate-700 hover:border-cyan-500/50 transition-colors">
+                        <input type="checkbox" id="singleSideMode" class="accent-cyan-400 w-4 h-4">
+                        <span class="text-xs font-bold text-slate-300">Single Side Mode</span>
+                    </label>
                 </div>
+
+                <!-- 2. Scan Documents -->
                 <div>
-                    <div class="flex justify-between text-xs font-bold text-slate-400 mb-3">
-                        <span>Contrast</span> <span id="valContrast" class="text-violet-400">20</span>
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">2. Scan
+                            Documents</label>
+                        <button onclick="clearCurrent()"
+                            class="text-[10px] text-red-400 hover:text-red-300 font-bold">CLEAR</button>
                     </div>
-                    <input type="range" min="-50" max="100" value="20" id="inpContrast" class="range-slider" oninput="updateFilters()">
+                    <div
+                        class="bg-cyan-900/20 border border-cyan-500/30 rounded px-2 py-1.5 flex items-start gap-2 mb-3">
+                        <i class="fa-solid fa-circle-info text-cyan-400 text-[10px] mt-0.5"></i>
+                        <p class="text-[10px] text-cyan-200 leading-tight">Tip: Upload Front & Back to auto-crop them
+                            for A4.</p>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div onclick="document.getElementById('uploadFront').click()"
+                            class="aspect-[1.6] relative rounded-lg border-2 border-dashed border-slate-600 hover:border-cyan-400 cursor-pointer flex flex-col items-center justify-center bg-slate-800/50 overflow-hidden group transition-colors">
+                            <img id="thumbFront"
+                                class="absolute inset-0 w-full h-full object-contain hidden z-10 bg-slate-900">
+                            <i
+                                class="fa-solid fa-camera text-2xl text-slate-500 group-hover:text-cyan-400 transition-colors"></i>
+                            <span class="text-[10px] mt-1 text-slate-400 font-bold group-hover:text-cyan-300">Front
+                                Side</span>
+                        </div>
+                        <div onclick="document.getElementById('uploadBack').click()" id="backBox"
+                            class="aspect-[1.6] relative rounded-lg border-2 border-dashed border-slate-600 hover:border-cyan-400 cursor-pointer flex flex-col items-center justify-center bg-slate-800/50 overflow-hidden group transition-colors">
+                            <img id="thumbBack"
+                                class="absolute inset-0 w-full h-full object-contain hidden z-10 bg-slate-900">
+                            <i
+                                class="fa-solid fa-rotate text-2xl text-slate-500 group-hover:text-cyan-400 transition-colors"></i>
+                            <span class="text-[10px] mt-1 text-slate-400 font-bold group-hover:text-cyan-300">Back
+                                Side</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. Queue -->
+                <div class="pt-4 border-t border-slate-800">
+                    <div class="flex justify-between items-center mb-2">
+                        <label id="lblQueue" class="text-xs font-bold text-slate-400 uppercase tracking-wider">Page 1
+                            Items</label>
+                        <span
+                            class="text-[10px] font-bold text-slate-900 bg-cyan-400 px-2 py-0.5 rounded-full shadow-[0_0_5px_rgba(0,255,255,0.5)]">Ready</span>
+                    </div>
+                    <div id="queueList"
+                        class="min-h-[80px] max-h-[150px] overflow-y-auto bg-slate-800/30 rounded border border-slate-700 p-2 space-y-1">
+                        <p class="text-[10px] text-slate-500 text-center py-4" id="emptyQueueMsg">Page Empty</p>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 mt-3">
+                        <button onclick="addNewPage()"
+                            class="py-2.5 border border-cyan-500/50 text-cyan-400 rounded-lg text-xs font-bold hover:bg-cyan-500/10 transition-colors shadow-[0_0_10px_rgba(0,255,255,0.2)]"><i
+                                class="fa-solid fa-file-circle-plus"></i> NEW PAGE</button>
+                        <button onclick="resetAll()"
+                            class="py-2.5 text-xs text-red-400 font-bold border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 rounded-lg transition-colors">RESET
+                            ALL</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions (Footer) -->
+            <div class="p-4 border-t border-slate-800 grid grid-cols-2 gap-3 bg-slate-900/80">
+                <button onclick="saveJPG()"
+                    class="py-2.5 bg-slate-800 border border-slate-600 rounded-lg text-xs font-bold text-slate-300 hover:border-cyan-400 hover:text-cyan-400 transition-colors shadow-sm">Save
+                    JPG</button>
+                <button onclick="savePDF()"
+                    class="py-2.5 bg-slate-800 border border-slate-600 rounded-lg text-xs font-bold text-slate-300 hover:border-violet-400 hover:text-violet-400 transition-colors shadow-sm">Save
+                    PDF</button>
+                <button onclick="printSheet()"
+                    class="col-span-2 py-3 bg-gradient-to-r from-cyan-500 to-violet-500 text-white rounded-lg text-sm font-bold shadow-[0_0_15px_rgba(139,92,246,0.4)] hover:shadow-[0_0_25px_rgba(0,255,255,0.5)] flex items-center justify-center gap-2 active:scale-95 transition-all">
+                    <i class="fa-solid fa-print"></i> PRINT SHEET
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Area (A4 Preview) -->
+        <main id="mainArea"
+            class="flex-1 relative overflow-x-auto overflow-y-hidden flex items-center snap-x snap-mandatory bg-[#020617] hide-scrollbar min-h-[40vh] md:min-h-0">
+            <!-- Background Glow inside Main Area -->
+            <div class="fixed inset-0 overflow-hidden pointer-events-none z-0 flex items-center justify-center">
+                <div class="w-[500px] h-[500px] bg-cyan-500/10 rounded-full blur-[100px]"></div>
+            </div>
+
+            <div id="pagesContainer" class="flex gap-10 h-full items-center min-w-max z-10 px-[30vw] py-10">
+                <!-- Pages rendered dynamically here -->
+            </div>
+
+            <!-- Page Indicator -->
+            <div
+                class="fixed bottom-6 left-[calc(50%+160px)] -translate-x-1/2 flex items-center gap-4 bg-slate-900/90 backdrop-blur-xl border border-slate-700 px-6 py-3 rounded-full shadow-[0_0_20px_rgba(0,0,0,0.8)] z-50">
+                <button onclick="setActivePage(Math.max(0, activePageIndex - 1))"
+                    class="text-slate-400 hover:text-cyan-400 active:scale-90 transition-transform"><i
+                        class="fa-solid fa-chevron-left text-lg"></i></button>
+                <span id="pageIndicator" class="text-xs font-bold text-slate-200 tracking-widest uppercase">Page 1 of
+                    1</span>
+                <button onclick="setActivePage(Math.min(pages.length - 1, activePageIndex + 1))"
+                    class="text-slate-400 hover:text-cyan-400 active:scale-90 transition-transform"><i
+                        class="fa-solid fa-chevron-right text-lg"></i></button>
+            </div>
+        </main>
+
+
+        <!-- Editor Modal -->
+        <div id="editorModal"
+            class="fixed inset-0 z-[100] hidden bg-[#020617]/90 backdrop-blur-xl flex flex-col md:flex-row transition-all">
+            <!-- Magnifier Canvas (Appears on drag) -->
+            <canvas id="magnifier" width="180" height="180"></canvas>
+
+            <!-- Canvas Workspace -->
+            <div class="flex-1 relative flex flex-col overflow-hidden bg-transparent cursor-crosshair"
+                id="editorWorkspace">
+                <!-- Zoom Controls -->
+                <div class="absolute top-4 right-4 flex flex-col gap-2 z-40">
+                    <button onclick="zoomEditor(1.1)"
+                        class="w-10 h-10 rounded-full bg-slate-800 text-slate-300 shadow-lg border border-slate-700 hover:text-cyan-400 hover:border-cyan-400 flex items-center justify-center active:scale-95 transition-colors"><i
+                            class="fa-solid fa-plus"></i></button>
+                    <button onclick="zoomEditor(0.9)"
+                        class="w-10 h-10 rounded-full bg-slate-800 text-slate-300 shadow-lg border border-slate-700 hover:text-cyan-400 hover:border-cyan-400 flex items-center justify-center active:scale-95 transition-colors"><i
+                            class="fa-solid fa-minus"></i></button>
+                    <div class="bg-slate-900 border border-slate-700 text-cyan-400 text-[10px] font-bold px-2 py-1 rounded-full text-center shadow-lg"
+                        id="zoomLabel">100%</div>
+                </div>
+
+                <!-- The actual drawing area -->
+                <div id="canvasContainer"
+                    class="w-full h-full flex items-center justify-center overflow-auto p-10 relative">
+                    <canvas id="cropCanvas" class="shadow-[0_0_40px_rgba(0,0,0,0.8)]"
+                        style="transform-origin: center center;"></canvas>
+                </div>
+            </div>
+
+            <!-- Right Sidebar Adjustments -->
+            <div
+                class="w-full md:w-80 h-[50vh] md:h-full bg-slate-900/80 backdrop-blur-md flex-col shrink-0 border-t md:border-t-0 md:border-l border-slate-800 shadow-2xl z-50 flex">
+                <div class="h-16 flex items-center justify-between px-6 border-b border-slate-800">
+                    <span class="text-slate-200 font-bold text-sm">ADJUST</span>
+                    <div class="flex gap-2">
+                        <button id="btnUpscale" onclick="toggleUpscale()"
+                            class="px-2 py-1 bg-slate-800 text-[10px] text-slate-300 rounded border border-slate-700 hover:border-cyan-400 font-bold transition-colors">HD</button>
+                        <button onclick="rotateCrop()"
+                            class="px-2 py-1 bg-slate-800 text-[10px] text-slate-300 rounded border border-slate-700 hover:border-cyan-400 font-bold transition-colors"
+                            title="Rotate"><i class="fa-solid fa-rotate-right"></i></button>
+                    </div>
+                    <button onclick="closeEditor()"
+                        class="text-slate-400 hover:text-red-400 text-xs font-bold active:scale-95 transition-transform">CANCEL</button>
+                </div>
+
+                <div class="flex-1 overflow-y-auto p-6 space-y-6">
+                    <div class="flex bg-slate-800/50 p-1 rounded-xl border border-slate-700">
+                        <button onclick="setFilter('orig')" id="filterOrig"
+                            class="flex-1 py-2.5 text-xs font-bold rounded-lg text-slate-400 hover:text-white transition-colors">Orig</button>
+                        <button onclick="setFilter('magic')" id="filterMagic"
+                            class="flex-1 py-2.5 text-xs font-bold rounded-lg text-slate-900 bg-cyan-400 shadow-[0_0_10px_rgba(0,255,255,0.4)] transition-colors">Magic</button>
+                        <button onclick="setFilter('bw')" id="filterBW"
+                            class="flex-1 py-2.5 text-xs font-bold rounded-lg text-slate-400 hover:text-white transition-colors">B&W</button>
+                    </div>
+
+                    <div class="space-y-5">
+                        <div>
+                            <div class="flex justify-between text-xs font-bold text-slate-400 mb-3">
+                                <span>Brightness</span> <span id="valBright" class="text-cyan-400">10</span>
+                            </div>
+                            <input type="range" min="-50" max="80" value="10" id="inpBright" class="range-slider"
+                                oninput="updateFilters()">
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-xs font-bold text-slate-400 mb-3">
+                                <span>Contrast</span> <span id="valContrast" class="text-violet-400">20</span>
+                            </div>
+                            <input type="range" min="-50" max="100" value="20" id="inpContrast" class="range-slider"
+                                oninput="updateFilters()">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-6 border-t border-slate-800 pb-safe">
+                    <button onclick="confirmScan()"
+                        class="w-full py-4 bg-gradient-to-r from-cyan-500 to-violet-500 hover:opacity-90 text-white font-bold rounded-xl shadow-[0_0_20px_rgba(139,92,246,0.4)] flex items-center justify-center gap-2 text-sm active:scale-95 transition-all">
+                        <span>CONFIRM SCAN</span> <i class="fa-solid fa-check"></i>
+                    </button>
                 </div>
             </div>
         </div>
 
-        <div class="p-6 border-t border-slate-800 pb-safe">
-            <button onclick="confirmScan()" class="w-full py-4 bg-gradient-to-r from-cyan-500 to-violet-500 hover:opacity-90 text-white font-bold rounded-xl shadow-[0_0_20px_rgba(139,92,246,0.4)] flex items-center justify-center gap-2 text-sm active:scale-95 transition-all">
-                <span>CONFIRM SCAN</span> <i class="fa-solid fa-check"></i>
-            </button>
-        </div>
-    </div>
-</div>
+        <input type="file" id="uploadFront" accept="image/*" class="hidden" onchange="handleUpload(event, 'front')">
+        <input type="file" id="uploadBack" accept="image/*" class="hidden" onchange="handleUpload(event, 'back')">
 
-<input type="file" id="uploadFront" accept="image/*" class="hidden" onchange="handleUpload(event, 'front')">
-<input type="file" id="uploadBack" accept="image/*" class="hidden" onchange="handleUpload(event, 'back')">
+        <!-- OpenCV async load -->
+        <script async src="https://docs.opencv.org/4.8.0/opencv.js" onload="onOpenCvReady()"
+            type="text/javascript"></script>
 
-<!-- OpenCV async load -->
-<script async src="https://docs.opencv.org/4.8.0/opencv.js" onload="onOpenCvReady()" type="text/javascript"></script>
+        <script>
+            // --- Global State ---
+            let cvReady = false;
+            let currentSide = 'front';
+            let rawImageObj = null;
+            let cropperPoints = [];
+            let draggingPointIndex = -1;
+            let scaleFactor = 1;
+            let editorZoom = 1;
 
-<script>
-// --- Global State ---
-let cvReady = false;
-let currentSide = 'front';
-let rawImageObj = null; 
-let cropperPoints = [];
-let draggingPointIndex = -1;
-let scaleFactor = 1;
-let editorZoom = 1;
+            let currentPrintMode = 'idcard'; // idcard, large, a4
 
-let currentPrintMode = 'idcard'; // idcard, large, a4
+            // ID Card Config (Standard ~ 85.6mm x 54mm). Rendering at high res for sharpness.
+            const TARGET_W = 1011;
+            const TARGET_H = 638;
 
-// ID Card Config (Standard ~ 85.6mm x 54mm). Rendering at high res for sharpness.
-const TARGET_W = 1011; 
-const TARGET_H = 638;
+            let currentFilter = 'magic';
+            let pages = [[]]; // Array of pages, each containing items { id, side, src, x, y, w, h }
+            let activePageIndex = 0;
+            let isUpscale = false;
 
-let currentFilter = 'magic';
-let pages = [ [] ]; // Array of pages, each containing items { id, side, src, x, y, w, h }
-let activePageIndex = 0;
-let isUpscale = false;
+            function toggleUpscale() {
+                isUpscale = !isUpscale;
+                const btn = document.getElementById('btnUpscale');
+                btn.classList.toggle('bg-cyan-900', isUpscale);
+                btn.classList.toggle('text-cyan-400', isUpscale);
+                btn.classList.toggle('border-cyan-400', isUpscale);
+            }
 
-function toggleUpscale() {
-    isUpscale = !isUpscale;
-    const btn = document.getElementById('btnUpscale');
-    btn.classList.toggle('bg-cyan-900', isUpscale);
-    btn.classList.toggle('text-cyan-400', isUpscale);
-    btn.classList.toggle('border-cyan-400', isUpscale);
-}
+            function rotateCrop() {
+                if (cropperPoints.length === 4) {
+                    const p = cropperPoints;
+                    cropperPoints = [p[3], p[0], p[1], p[2]];
+                    drawEditor();
+                }
+            }
 
-function rotateCrop() {
-    if (cropperPoints.length === 4) {
-        const p = cropperPoints;
-        cropperPoints = [p[3], p[0], p[1], p[2]];
-        drawEditor();
-    }
-}
+            function addNewPage() {
+                pages.push([]);
+                activePageIndex = pages.length - 1;
+                renderQueueList();
+                renderA4();
+                setTimeout(() => scrollToPage(activePageIndex), 100);
+            }
 
-function addNewPage() {
-    pages.push([]);
-    activePageIndex = pages.length - 1;
-    renderQueueList();
-    renderA4();
-    setTimeout(() => scrollToPage(activePageIndex), 100);
-}
+            function setActivePage(index) {
+                activePageIndex = index;
+                renderQueueList();
+                renderA4();
+                scrollToPage(index);
+            }
 
-function setActivePage(index) {
-    activePageIndex = index;
-    renderQueueList();
-    renderA4();
-    scrollToPage(index);
-}
+            function scrollToPage(index) {
+                const pEl = document.getElementById(`pageWrap_${index}`);
+                if (pEl) pEl.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+            }
 
-function scrollToPage(index) {
-    const pEl = document.getElementById(`pageWrap_${index}`);
-    if (pEl) pEl.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
-}
+            function setPrintMode(mode) {
+                currentPrintMode = mode;
+                ['idcard', 'large', 'a4'].forEach(m => {
+                    const btn = document.getElementById('btnMode' + m.charAt(0).toUpperCase() + m.slice(1));
+                    if (m === mode) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+                renderA4();
+            }
 
-function setPrintMode(mode) {
-    currentPrintMode = mode;
-    ['idcard', 'large', 'a4'].forEach(m => {
-        const btn = document.getElementById('btnMode' + m.charAt(0).toUpperCase() + m.slice(1));
-        if (m === mode) {
-            btn.classList.add('active');
-        } else {
-            btn.classList.remove('active');
-        }
-    });
-    renderA4();
-}
+            // UI Initialization
+            document.getElementById('singleSideMode').addEventListener('change', function (e) {
+                const backBox = document.getElementById('backBox');
+                if (e.target.checked) {
+                    backBox.style.opacity = '0.4';
+                    backBox.style.pointerEvents = 'none';
+                } else {
+                    backBox.style.opacity = '1';
+                    backBox.style.pointerEvents = 'auto';
+                }
+            });
 
-// UI Initialization
-document.getElementById('singleSideMode').addEventListener('change', function(e) {
-    const backBox = document.getElementById('backBox');
-    if (e.target.checked) {
-        backBox.style.opacity = '0.4';
-        backBox.style.pointerEvents = 'none';
-    } else {
-        backBox.style.opacity = '1';
-        backBox.style.pointerEvents = 'auto';
-    }
-});
+            // OpenCV Init Hook
+            function onOpenCvReady() {
+                cv['onRuntimeInitialized'] = () => {
+                    cvReady = true;
+                    document.getElementById('loaderScreen').classList.add('hidden');
+                };
+            }
+            // Fallback if already loaded
+            setTimeout(() => { if (typeof cv !== 'undefined' && cv.getBuildInformation && !cvReady) onOpenCvReady(); }, 2000);
 
-// OpenCV Init Hook
-function onOpenCvReady() {
-    cv['onRuntimeInitialized'] = () => {
-        cvReady = true;
-        document.getElementById('loaderScreen').classList.add('hidden');
-    };
-}
-// Fallback if already loaded
-setTimeout(() => { if(typeof cv !== 'undefined' && cv.getBuildInformation && !cvReady) onOpenCvReady(); }, 2000);
+            // --- Upload Handling ---
+            function handleUpload(event, side) {
+                if (!cvReady) return alert('Please wait for the image processing engine to load.');
+                const file = event.target.files[0];
+                if (!file) return;
 
-// --- Upload Handling ---
-function handleUpload(event, side) {
-    if (!cvReady) return alert('Please wait for the image processing engine to load.');
-    const file = event.target.files[0];
-    if (!file) return;
+                currentSide = side;
+                const url = URL.createObjectURL(file);
+                rawImageObj = new Image();
+                rawImageObj.onload = () => {
+                    openEditor();
+                };
+                rawImageObj.src = url;
+                // Reset input so the same file can be uploaded again if needed
+                event.target.value = '';
+            }
 
-    currentSide = side;
-    const url = URL.createObjectURL(file);
-    rawImageObj = new Image();
-    rawImageObj.onload = () => {
-        openEditor();
-    };
-    rawImageObj.src = url;
-    // Reset input so the same file can be uploaded again if needed
-    event.target.value = '';
-}
+            // --- Editor Logic ---
+            const cropCanvas = document.getElementById('cropCanvas');
+            const ctx = cropCanvas.getContext('2d');
+            const magCanvas = document.getElementById('magnifier');
+            const ctxMag = magCanvas.getContext('2d');
+            const workspace = document.getElementById('editorWorkspace');
 
-// --- Editor Logic ---
-const cropCanvas = document.getElementById('cropCanvas');
-const ctx = cropCanvas.getContext('2d');
-const magCanvas = document.getElementById('magnifier');
-const ctxMag = magCanvas.getContext('2d');
-const workspace = document.getElementById('editorWorkspace');
+            function openEditor() {
+                document.getElementById('editorModal').classList.remove('hidden');
 
-function openEditor() {
-    document.getElementById('editorModal').classList.remove('hidden');
-    
-    // Fit image to screen workspace area
-    const isMobile = window.innerWidth < 768;
-    const sidebarW = isMobile ? 0 : 320;
-    const sidebarH = isMobile ? window.innerHeight * 0.5 : 0;
-    const padX = isMobile ? 40 : 100;
-    const padY = isMobile ? 40 : 100;
-    
-    const maxW = window.innerWidth - sidebarW - padX;
-    const maxH = window.innerHeight - sidebarH - padY;
-    
-    scaleFactor = Math.min(Math.max(10, maxW) / rawImageObj.width, Math.max(10, maxH) / rawImageObj.height);
-    if (scaleFactor > 1) scaleFactor = 1; // Prevent upscale blurring
-    
-    cropCanvas.width = rawImageObj.width * scaleFactor;
-    cropCanvas.height = rawImageObj.height * scaleFactor;
-    
-    // Initialize 4 perspective points
-    const padding = 20;
-    const w = cropCanvas.width;
-    const h = cropCanvas.height;
-    cropperPoints = [
-        {x: padding, y: padding}, // Top-Left
-        {x: w - padding, y: padding}, // Top-Right
-        {x: w - padding, y: h - padding}, // Bottom-Right
-        {x: padding, y: h - padding} // Bottom-Left
-    ];
-    
-    editorZoom = 1;
-    applyEditorZoom();
-    setFilter('magic'); // Automatically apply magic filter on open
-}
+                // Fit image to screen workspace area
+                const isMobile = window.innerWidth < 768;
+                const sidebarW = isMobile ? 0 : 320;
+                const sidebarH = isMobile ? window.innerHeight * 0.5 : 0;
+                const padX = isMobile ? 40 : 100;
+                const padY = isMobile ? 40 : 100;
 
-function closeEditor() {
-    document.getElementById('editorModal').classList.add('hidden');
-    rawImageObj = null;
-}
+                const maxW = window.innerWidth - sidebarW - padX;
+                const maxH = window.innerHeight - sidebarH - padY;
 
-function zoomEditor(factor) {
-    editorZoom *= factor;
-    // Clamp zoom
-    if(editorZoom < 0.5) editorZoom = 0.5;
-    if(editorZoom > 3.0) editorZoom = 3.0;
-    applyEditorZoom();
-}
+                scaleFactor = Math.min(Math.max(10, maxW) / rawImageObj.width, Math.max(10, maxH) / rawImageObj.height);
+                if (scaleFactor > 1) scaleFactor = 1; // Prevent upscale blurring
 
-function applyEditorZoom() {
-    cropCanvas.style.transform = `scale(${editorZoom})`;
-    document.getElementById('zoomLabel').innerText = Math.round(editorZoom * 100) + '%';
-}
+                cropCanvas.width = rawImageObj.width * scaleFactor;
+                cropCanvas.height = rawImageObj.height * scaleFactor;
 
-// --- Drag & Drop Interactivity ---
-function getMousePos(e) {
-    const rect = cropCanvas.getBoundingClientRect();
-    let clientX = e.clientX;
-    let clientY = e.clientY;
-    if(e.touches && e.touches.length > 0) {
-        clientX = e.touches[0].clientX;
-        clientY = e.touches[0].clientY;
-    }
-    // Calculate position considering scale factor and zoom
-    return {
-        x: (clientX - rect.left) / editorZoom,
-        y: (clientY - rect.top) / editorZoom
-    };
-}
+                // Initialize 4 perspective points
+                const padding = 20;
+                const w = cropCanvas.width;
+                const h = cropCanvas.height;
+                cropperPoints = [
+                    { x: padding, y: padding }, // Top-Left
+                    { x: w - padding, y: padding }, // Top-Right
+                    { x: w - padding, y: h - padding }, // Bottom-Right
+                    { x: padding, y: h - padding } // Bottom-Left
+                ];
 
-cropCanvas.addEventListener('mousedown', startDrag);
-cropCanvas.addEventListener('touchstart', startDrag, {passive: false});
+                editorZoom = 1;
+                applyEditorZoom();
+                setFilter('magic'); // Automatically apply magic filter on open
+            }
 
-workspace.addEventListener('mousemove', drag);
-workspace.addEventListener('touchmove', drag, {passive: false});
+            function closeEditor() {
+                document.getElementById('editorModal').classList.add('hidden');
+                rawImageObj = null;
+            }
 
-window.addEventListener('mouseup', endDrag);
-window.addEventListener('touchend', endDrag);
+            function zoomEditor(factor) {
+                editorZoom *= factor;
+                // Clamp zoom
+                if (editorZoom < 0.5) editorZoom = 0.5;
+                if (editorZoom > 3.0) editorZoom = 3.0;
+                applyEditorZoom();
+            }
 
-function startDrag(e) {
-    e.preventDefault();
-    const pos = getMousePos(e);
-    // Find the closest point within a 30px hit radius
-    let minDist = 30; 
-    draggingPointIndex = -1;
-    cropperPoints.forEach((p, i) => {
-        const dist = Math.hypot(p.x - pos.x, p.y - pos.y);
-        if(dist < minDist) {
-            minDist = dist;
-            draggingPointIndex = i;
-        }
-    });
-}
+            function applyEditorZoom() {
+                cropCanvas.style.transform = `scale(${editorZoom})`;
+                document.getElementById('zoomLabel').innerText = Math.round(editorZoom * 100) + '%';
+            }
 
-function drag(e) {
-    if (draggingPointIndex === -1) {
-        magCanvas.style.display = 'none';
-        return;
-    }
-    e.preventDefault();
-    const pos = getMousePos(e);
-    
-    // Constrain point to canvas bounds
-    pos.x = Math.max(0, Math.min(cropCanvas.width, pos.x));
-    pos.y = Math.max(0, Math.min(cropCanvas.height, pos.y));
-    
-    cropperPoints[draggingPointIndex] = pos;
-    drawEditor();
-    
-    // Magnifier Logic
-    magCanvas.style.display = 'block';
-    
-    let clientX = e.clientX || (e.touches && e.touches[0].clientX);
-    let clientY = e.clientY || (e.touches && e.touches[0].clientY);
-    
-    // Position magnifier near cursor but offset
-    let magX = clientX - 90; 
-    let magY = clientY - 220; 
-    if(magY < 10) magY = clientY + 40; // Flip below if off-screen top
-    
-    magCanvas.style.left = magX + 'px';
-    magCanvas.style.top = magY + 'px';
-    
-    updateMagnifier(pos.x, pos.y);
-}
+            // --- Drag & Drop Interactivity ---
+            function getMousePos(e) {
+                const rect = cropCanvas.getBoundingClientRect();
+                let clientX = e.clientX;
+                let clientY = e.clientY;
+                if (e.touches && e.touches.length > 0) {
+                    clientX = e.touches[0].clientX;
+                    clientY = e.touches[0].clientY;
+                }
+                // Calculate position considering scale factor and zoom
+                return {
+                    x: (clientX - rect.left) / editorZoom,
+                    y: (clientY - rect.top) / editorZoom
+                };
+            }
 
-function endDrag() {
-    draggingPointIndex = -1;
-    magCanvas.style.display = 'none';
-}
+            cropCanvas.addEventListener('mousedown', startDrag);
+            cropCanvas.addEventListener('touchstart', startDrag, { passive: false });
 
-function drawEditor() {
-    ctx.clearRect(0, 0, cropCanvas.width, cropCanvas.height);
-    ctx.drawImage(rawImageObj, 0, 0, cropCanvas.width, cropCanvas.height);
-    
-    // Draw cropping polygon
-    ctx.beginPath();
-    ctx.moveTo(cropperPoints[0].x, cropperPoints[0].y);
-    ctx.lineTo(cropperPoints[1].x, cropperPoints[1].y);
-    ctx.lineTo(cropperPoints[2].x, cropperPoints[2].y);
-    ctx.lineTo(cropperPoints[3].x, cropperPoints[3].y);
-    ctx.closePath();
-    
-    // Shade outside area
-    ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
-    ctx.fill("evenodd"); 
-    
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = "#00ffff"; 
-    ctx.stroke();
-    
-    // Draw draggable corner anchors
-    cropperPoints.forEach((p) => {
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, 6, 0, Math.PI * 2);
-        ctx.fillStyle = "#020617";
-        ctx.fill();
-        ctx.lineWidth = 2;
-        ctx.strokeStyle = "#00ffff";
-        ctx.stroke();
-    });
-}
+            workspace.addEventListener('mousemove', drag);
+            workspace.addEventListener('touchmove', drag, { passive: false });
 
-function updateMagnifier(x, y) {
-    const r = 90; // magnifier radius
-    ctxMag.clearRect(0, 0, 180, 180);
-    
-    // Zoom factor
-    const s = 2; 
-    const sw = 180 / s;
-    const sh = 180 / s;
-    const sx = x - sw / 2;
-    const sy = y - sh / 2;
-    
-    // Circular clip
-    ctxMag.save();
-    ctxMag.beginPath();
-    ctxMag.arc(r, r, r, 0, Math.PI * 2);
-    ctxMag.clip();
-    
-    ctxMag.drawImage(cropCanvas, sx, sy, sw, sh, 0, 0, 180, 180);
-    
-    // Crosshair
-    ctxMag.beginPath();
-    ctxMag.moveTo(r, r - 20); ctxMag.lineTo(r, r + 20);
-    ctxMag.moveTo(r - 20, r); ctxMag.lineTo(r + 20, r);
-    ctxMag.lineWidth = 2;
-    ctxMag.strokeStyle = "#2563eb";
-    ctxMag.stroke();
-    ctxMag.restore();
-}
+            window.addEventListener('mouseup', endDrag);
+            window.addEventListener('touchend', endDrag);
 
-// --- Right Sidebar Filters ---
-function setFilter(type) {
-    currentFilter = type;
-    const defaultClasses = "flex-1 py-2.5 text-xs font-bold rounded-lg text-slate-400 hover:text-white transition-colors bg-transparent";
-    const magicActiveClasses = "flex-1 py-2.5 text-xs font-bold rounded-lg text-slate-900 bg-cyan-400 shadow-[0_0_10px_rgba(0,255,255,0.4)] transition-colors";
-    const bwActiveClasses = "flex-1 py-2.5 text-xs font-bold rounded-lg text-white bg-violet-600 shadow-[0_0_10px_rgba(139,92,246,0.5)] transition-colors";
-    const origActiveClasses = "flex-1 py-2.5 text-xs font-bold rounded-lg text-white bg-slate-600 shadow-sm transition-colors";
-    
-    document.getElementById('filterOrig').className = defaultClasses;
-    document.getElementById('filterMagic').className = defaultClasses;
-    document.getElementById('filterBW').className = defaultClasses;
-    
-    if(type === 'orig') {
-        document.getElementById('filterOrig').className = origActiveClasses;
-        document.getElementById('inpBright').value = 0;
-        document.getElementById('inpContrast').value = 0;
-    }
-    if(type === 'magic') {
-        document.getElementById('filterMagic').className = magicActiveClasses;
-        document.getElementById('inpBright').value = 10;
-        document.getElementById('inpContrast').value = 20;
-    }
-    if(type === 'bw') {
-        document.getElementById('filterBW').className = bwActiveClasses;
-        document.getElementById('inpBright').value = 15;
-        document.getElementById('inpContrast').value = 30;
-    }
-    
-    updateFilters();
-}
+            function startDrag(e) {
+                e.preventDefault();
+                const pos = getMousePos(e);
+                // Find the closest point within a 30px hit radius
+                let minDist = 30;
+                draggingPointIndex = -1;
+                cropperPoints.forEach((p, i) => {
+                    const dist = Math.hypot(p.x - pos.x, p.y - pos.y);
+                    if (dist < minDist) {
+                        minDist = dist;
+                        draggingPointIndex = i;
+                    }
+                });
+            }
 
-function updateFilters() {
-    let b = document.getElementById('inpBright').value;
-    let c = document.getElementById('inpContrast').value;
-    document.getElementById('valBright').innerText = b;
-    document.getElementById('valContrast').innerText = c;
-    
-    // Apply CSS filters to the canvas element for live preview
-    let filterString = `brightness(${100 + parseInt(b)}%) contrast(${100 + parseInt(c)}%)`;
-    if(currentFilter === 'magic') filterString += ` saturate(120%) drop-shadow(0 0 0px #000)`; 
-    if(currentFilter === 'bw') filterString += ` grayscale(100%)`;
-    
-    cropCanvas.style.filter = filterString;
-    drawEditor(); // Redraw context
-}
+            function drag(e) {
+                if (draggingPointIndex === -1) {
+                    magCanvas.style.display = 'none';
+                    return;
+                }
+                e.preventDefault();
+                const pos = getMousePos(e);
 
-// --- Perspective Transform & Rendering ---
-function confirmScan() {
-    if(!cvReady) return;
+                // Constrain point to canvas bounds
+                pos.x = Math.max(0, Math.min(cropCanvas.width, pos.x));
+                pos.y = Math.max(0, Math.min(cropCanvas.height, pos.y));
 
-    // Convert canvas coordinates back to original image scale
-    const srcCoords = cropperPoints.map(p => ({
-        x: p.x / scaleFactor,
-        y: p.y / scaleFactor
-    }));
+                cropperPoints[draggingPointIndex] = pos;
+                drawEditor();
 
-    // Calculate crop aspect ratio
-    const cropW = Math.max(
-        Math.hypot(srcCoords[1].x - srcCoords[0].x, srcCoords[1].y - srcCoords[0].y),
-        Math.hypot(srcCoords[2].x - srcCoords[3].x, srcCoords[2].y - srcCoords[3].y)
-    );
-    const cropH = Math.max(
-        Math.hypot(srcCoords[3].x - srcCoords[0].x, srcCoords[3].y - srcCoords[0].y),
-        Math.hypot(srcCoords[2].x - srcCoords[1].x, srcCoords[2].y - srcCoords[1].y)
-    );
-    
-    let outW = TARGET_W;
-    let outH = TARGET_H;
-    
-    if (currentPrintMode !== 'idcard') {
-        const maxOut = isUpscale ? 3000 : 1500;
-        if (cropW > cropH) {
-            outW = maxOut;
-            outH = (cropH / cropW) * maxOut;
-        } else {
-            outH = maxOut;
-            outW = (cropW / cropH) * maxOut;
-        }
-    } else if (isUpscale) {
-        outW *= 2;
-        outH *= 2;
-    }
+                // Magnifier Logic
+                magCanvas.style.display = 'block';
 
-    // Perform OpenCV Transform
-    const src = cv.imread(rawImageObj);
-    const dst = new cv.Mat();
+                let clientX = e.clientX || (e.touches && e.touches[0].clientX);
+                let clientY = e.clientY || (e.touches && e.touches[0].clientY);
 
-    let srcTri = cv.matFromArray(4, 1, cv.CV_32FC2, [
-        srcCoords[0].x, srcCoords[0].y, 
-        srcCoords[1].x, srcCoords[1].y, 
-        srcCoords[2].x, srcCoords[2].y, 
-        srcCoords[3].x, srcCoords[3].y
-    ]);
-    
-    let dstTri = cv.matFromArray(4, 1, cv.CV_32FC2, [
-        0, 0, 
-        outW, 0, 
-        outW, outH, 
-        0, outH
-    ]);
+                // Position magnifier near cursor but offset
+                let magX = clientX - 90;
+                let magY = clientY - 220;
+                if (magY < 10) magY = clientY + 40; // Flip below if off-screen top
 
-    let M = cv.getPerspectiveTransform(srcTri, dstTri);
-    let dsize = new cv.Size(outW, outH);
-    cv.warpPerspective(src, dst, M, dsize, cv.INTER_LINEAR, cv.BORDER_CONSTANT, new cv.Scalar());
+                magCanvas.style.left = magX + 'px';
+                magCanvas.style.top = magY + 'px';
 
-    src.delete(); srcTri.delete(); dstTri.delete(); M.delete();
+                updateMagnifier(pos.x, pos.y);
+            }
 
-    // Render warped image to a temporary canvas to apply visual filters permanently
-    const tempCanvas = document.createElement('canvas');
-    tempCanvas.width = outW;
-    tempCanvas.height = outH;
-    cv.imshow(tempCanvas, dst);
-    dst.delete(); 
+            function endDrag() {
+                draggingPointIndex = -1;
+                magCanvas.style.display = 'none';
+            }
 
-    const finalCanvas = document.createElement('canvas');
-    finalCanvas.width = outW;
-    finalCanvas.height = outH;
-    const fCtx = finalCanvas.getContext('2d');
-    
-    let b = document.getElementById('inpBright').value;
-    let c = document.getElementById('inpContrast').value;
-    let filterString = `brightness(${100 + parseInt(b)}%) contrast(${100 + parseInt(c)}%)`;
-    if(currentFilter === 'magic') filterString += ` saturate(120%) drop-shadow(0 0 0px #000)`;
-    if(currentFilter === 'bw') filterString += ` grayscale(100%)`;
-    
-    fCtx.filter = filterString;
-    fCtx.drawImage(tempCanvas, 0, 0);
+            function drawEditor() {
+                ctx.clearRect(0, 0, cropCanvas.width, cropCanvas.height);
+                ctx.drawImage(rawImageObj, 0, 0, cropCanvas.width, cropCanvas.height);
 
-    const dataUrl = finalCanvas.toDataURL('image/jpeg', 1.0);
+                // Draw cropping polygon
+                ctx.beginPath();
+                ctx.moveTo(cropperPoints[0].x, cropperPoints[0].y);
+                ctx.lineTo(cropperPoints[1].x, cropperPoints[1].y);
+                ctx.lineTo(cropperPoints[2].x, cropperPoints[2].y);
+                ctx.lineTo(cropperPoints[3].x, cropperPoints[3].y);
+                ctx.closePath();
 
-    // Initial sizes and coords
-    let x = 10, y = 10, defW = 85.6, defH = 54;
-    if (currentPrintMode !== 'idcard') {
-        const aspect = outW / outH;
-        defW = currentPrintMode === 'a4' ? 180 : 100;
-        defH = defW / aspect;
-        x = (210 - defW) / 2;
-        y = (297 - defH) / 2;
-    }
+                // Shade outside area
+                ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
+                ctx.fill("evenodd");
 
-    // Add to processing queue
-    addToQueue(currentSide, dataUrl, x, y, defW, defH);
-    
-    closeEditor();
-}
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = "#00ffff";
+                ctx.stroke();
 
-// --- Queue & A4 Layout Management ---
-function addToQueue(side, dataUrl, x=10, y=10, w=85.6, h=54) {
-    pages[activePageIndex].push({ id: Date.now(), side, src: dataUrl, x, y, w, h });
-    
-    // Update thumbnail indicator
-    const thumb = side === 'front' ? document.getElementById('thumbFront') : document.getElementById('thumbBack');
-    thumb.src = dataUrl;
-    thumb.classList.remove('hidden');
+                // Draw draggable corner anchors
+                cropperPoints.forEach((p) => {
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, 6, 0, Math.PI * 2);
+                    ctx.fillStyle = "#020617";
+                    ctx.fill();
+                    ctx.lineWidth = 2;
+                    ctx.strokeStyle = "#00ffff";
+                    ctx.stroke();
+                });
+            }
 
-    renderQueueList();
-    renderA4();
-}
+            function updateMagnifier(x, y) {
+                const r = 90; // magnifier radius
+                ctxMag.clearRect(0, 0, 180, 180);
 
-function clearCurrent() {
-    document.getElementById('thumbFront').classList.add('hidden');
-    document.getElementById('thumbBack').classList.add('hidden');
-}
+                // Zoom factor
+                const s = 2;
+                const sw = 180 / s;
+                const sh = 180 / s;
+                const sx = x - sw / 2;
+                const sy = y - sh / 2;
 
-function resetAll() {
-    if(confirm("Clear all pages?")) {
-        pages = [ [] ];
-        activePageIndex = 0;
-        clearCurrent();
-        renderQueueList();
-        renderA4();
-    }
-}
+                // Circular clip
+                ctxMag.save();
+                ctxMag.beginPath();
+                ctxMag.arc(r, r, r, 0, Math.PI * 2);
+                ctxMag.clip();
 
-function remItem(id) {
-    pages[activePageIndex] = pages[activePageIndex].filter(item => item.id !== id);
-    renderQueueList();
-    renderA4();
-}
+                ctxMag.drawImage(cropCanvas, sx, sy, sw, sh, 0, 0, 180, 180);
 
-function renderQueueList() {
-    const list = document.getElementById('queueList');
-    const lbl = document.getElementById('lblQueue');
-    if(lbl) lbl.innerText = `Page ${activePageIndex + 1} Items`;
-    
-    const pageItems = pages[activePageIndex];
-    if (pageItems.length === 0) {
-        list.innerHTML = `<p class="text-[10px] text-slate-500 text-center py-4" id="emptyQueueMsg">Page Empty</p>`;
-        return;
-    }
+                // Crosshair
+                ctxMag.beginPath();
+                ctxMag.moveTo(r, r - 20); ctxMag.lineTo(r, r + 20);
+                ctxMag.moveTo(r - 20, r); ctxMag.lineTo(r + 20, r);
+                ctxMag.lineWidth = 2;
+                ctxMag.strokeStyle = "#2563eb";
+                ctxMag.stroke();
+                ctxMag.restore();
+            }
 
-    list.innerHTML = '';
-    pageItems.forEach((item, index) => {
-        const div = document.createElement('div');
-        div.className = "flex justify-between p-2 bg-slate-800/50 border border-slate-700 rounded items-center shadow-sm mb-1";
-        div.innerHTML = `
+            // --- Right Sidebar Filters ---
+            function setFilter(type) {
+                currentFilter = type;
+                const defaultClasses = "flex-1 py-2.5 text-xs font-bold rounded-lg text-slate-400 hover:text-white transition-colors bg-transparent";
+                const magicActiveClasses = "flex-1 py-2.5 text-xs font-bold rounded-lg text-slate-900 bg-cyan-400 shadow-[0_0_10px_rgba(0,255,255,0.4)] transition-colors";
+                const bwActiveClasses = "flex-1 py-2.5 text-xs font-bold rounded-lg text-white bg-violet-600 shadow-[0_0_10px_rgba(139,92,246,0.5)] transition-colors";
+                const origActiveClasses = "flex-1 py-2.5 text-xs font-bold rounded-lg text-white bg-slate-600 shadow-sm transition-colors";
+
+                document.getElementById('filterOrig').className = defaultClasses;
+                document.getElementById('filterMagic').className = defaultClasses;
+                document.getElementById('filterBW').className = defaultClasses;
+
+                if (type === 'orig') {
+                    document.getElementById('filterOrig').className = origActiveClasses;
+                    document.getElementById('inpBright').value = 0;
+                    document.getElementById('inpContrast').value = 0;
+                }
+                if (type === 'magic') {
+                    document.getElementById('filterMagic').className = magicActiveClasses;
+                    document.getElementById('inpBright').value = 10;
+                    document.getElementById('inpContrast').value = 20;
+                }
+                if (type === 'bw') {
+                    document.getElementById('filterBW').className = bwActiveClasses;
+                    document.getElementById('inpBright').value = 15;
+                    document.getElementById('inpContrast').value = 30;
+                }
+
+                updateFilters();
+            }
+
+            function updateFilters() {
+                let b = document.getElementById('inpBright').value;
+                let c = document.getElementById('inpContrast').value;
+                document.getElementById('valBright').innerText = b;
+                document.getElementById('valContrast').innerText = c;
+
+                // Apply CSS filters to the canvas element for live preview
+                let filterString = `brightness(${100 + parseInt(b)}%) contrast(${100 + parseInt(c)}%)`;
+                if (currentFilter === 'magic') filterString += ` saturate(120%) drop-shadow(0 0 0px #000)`;
+                if (currentFilter === 'bw') filterString += ` grayscale(100%)`;
+
+                cropCanvas.style.filter = filterString;
+                drawEditor(); // Redraw context
+            }
+
+            // --- Perspective Transform & Rendering ---
+            function confirmScan() {
+                if (!cvReady) return;
+
+                // Convert canvas coordinates back to original image scale
+                const srcCoords = cropperPoints.map(p => ({
+                    x: p.x / scaleFactor,
+                    y: p.y / scaleFactor
+                }));
+
+                // Calculate crop aspect ratio
+                const cropW = Math.max(
+                    Math.hypot(srcCoords[1].x - srcCoords[0].x, srcCoords[1].y - srcCoords[0].y),
+                    Math.hypot(srcCoords[2].x - srcCoords[3].x, srcCoords[2].y - srcCoords[3].y)
+                );
+                const cropH = Math.max(
+                    Math.hypot(srcCoords[3].x - srcCoords[0].x, srcCoords[3].y - srcCoords[0].y),
+                    Math.hypot(srcCoords[2].x - srcCoords[1].x, srcCoords[2].y - srcCoords[1].y)
+                );
+
+                let outW = TARGET_W;
+                let outH = TARGET_H;
+
+                if (currentPrintMode !== 'idcard') {
+                    const maxOut = isUpscale ? 3000 : 1500;
+                    if (cropW > cropH) {
+                        outW = maxOut;
+                        outH = (cropH / cropW) * maxOut;
+                    } else {
+                        outH = maxOut;
+                        outW = (cropW / cropH) * maxOut;
+                    }
+                } else if (isUpscale) {
+                    outW *= 2;
+                    outH *= 2;
+                }
+
+                // Perform OpenCV Transform
+                const src = cv.imread(rawImageObj);
+                const dst = new cv.Mat();
+
+                let srcTri = cv.matFromArray(4, 1, cv.CV_32FC2, [
+                    srcCoords[0].x, srcCoords[0].y,
+                    srcCoords[1].x, srcCoords[1].y,
+                    srcCoords[2].x, srcCoords[2].y,
+                    srcCoords[3].x, srcCoords[3].y
+                ]);
+
+                let dstTri = cv.matFromArray(4, 1, cv.CV_32FC2, [
+                    0, 0,
+                    outW, 0,
+                    outW, outH,
+                    0, outH
+                ]);
+
+                let M = cv.getPerspectiveTransform(srcTri, dstTri);
+                let dsize = new cv.Size(outW, outH);
+                cv.warpPerspective(src, dst, M, dsize, cv.INTER_LINEAR, cv.BORDER_CONSTANT, new cv.Scalar());
+
+                src.delete(); srcTri.delete(); dstTri.delete(); M.delete();
+
+                // Render warped image to a temporary canvas to apply visual filters permanently
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = outW;
+                tempCanvas.height = outH;
+                cv.imshow(tempCanvas, dst);
+                dst.delete();
+
+                const finalCanvas = document.createElement('canvas');
+                finalCanvas.width = outW;
+                finalCanvas.height = outH;
+                const fCtx = finalCanvas.getContext('2d');
+
+                let b = document.getElementById('inpBright').value;
+                let c = document.getElementById('inpContrast').value;
+                let filterString = `brightness(${100 + parseInt(b)}%) contrast(${100 + parseInt(c)}%)`;
+                if (currentFilter === 'magic') filterString += ` saturate(120%) drop-shadow(0 0 0px #000)`;
+                if (currentFilter === 'bw') filterString += ` grayscale(100%)`;
+
+                fCtx.filter = filterString;
+                fCtx.drawImage(tempCanvas, 0, 0);
+
+                const dataUrl = finalCanvas.toDataURL('image/jpeg', 1.0);
+
+                // Initial sizes and coords
+                let x = 10, y = 10, defW = 85.6, defH = 54;
+                if (currentPrintMode !== 'idcard') {
+                    const aspect = outW / outH;
+                    defW = currentPrintMode === 'a4' ? 180 : 100;
+                    defH = defW / aspect;
+                    x = (210 - defW) / 2;
+                    y = (297 - defH) / 2;
+                }
+
+                // Add to processing queue
+                addToQueue(currentSide, dataUrl, x, y, defW, defH);
+
+                closeEditor();
+            }
+
+            // --- Queue & A4 Layout Management ---
+            function addToQueue(side, dataUrl, x = 10, y = 10, w = 85.6, h = 54) {
+                pages[activePageIndex].push({ id: Date.now(), side, src: dataUrl, x, y, w, h });
+
+                // Update thumbnail indicator
+                const thumb = side === 'front' ? document.getElementById('thumbFront') : document.getElementById('thumbBack');
+                thumb.src = dataUrl;
+                thumb.classList.remove('hidden');
+
+                renderQueueList();
+                renderA4();
+            }
+
+            function clearCurrent() {
+                document.getElementById('thumbFront').classList.add('hidden');
+                document.getElementById('thumbBack').classList.add('hidden');
+            }
+
+            function resetAll() {
+                if (confirm("Clear all pages?")) {
+                    pages = [[]];
+                    activePageIndex = 0;
+                    clearCurrent();
+                    renderQueueList();
+                    renderA4();
+                }
+            }
+
+            function remItem(id) {
+                pages[activePageIndex] = pages[activePageIndex].filter(item => item.id !== id);
+                renderQueueList();
+                renderA4();
+            }
+
+            function renderQueueList() {
+                const list = document.getElementById('queueList');
+                const lbl = document.getElementById('lblQueue');
+                if (lbl) lbl.innerText = `Page ${activePageIndex + 1} Items`;
+
+                const pageItems = pages[activePageIndex];
+                if (pageItems.length === 0) {
+                    list.innerHTML = `<p class="text-[10px] text-slate-500 text-center py-4" id="emptyQueueMsg">Page Empty</p>`;
+                    return;
+                }
+
+                list.innerHTML = '';
+                pageItems.forEach((item, index) => {
+                    const div = document.createElement('div');
+                    div.className = "flex justify-between p-2 bg-slate-800/50 border border-slate-700 rounded items-center shadow-sm mb-1";
+                    div.innerHTML = `
             <span class="text-xs font-bold text-slate-300">#${index + 1} ${item.side === 'front' ? 'ID Front' : 'ID Back'}</span>
             <button onclick="remItem(${item.id})" class="w-6 h-6 flex items-center justify-center text-red-400 hover:bg-red-500/20 rounded transition-colors">
                 <i class="fa-solid fa-trash-can"></i>
             </button>
         `;
-        list.appendChild(div);
-    });
-}
+                    list.appendChild(div);
+                });
+            }
 
-let activeItemDrag = null;
-let activeItemResize = null;
+            let activeItemDrag = null;
+            let activeItemResize = null;
 
-function renderA4() {
-    const container = document.getElementById('pagesContainer');
-    if (!container) return;
-    
-    const main = document.getElementById('mainArea');
-    const currentScroll = main ? main.scrollLeft : 0;
+            function renderA4() {
+                const container = document.getElementById('pagesContainer');
+                if (!container) return;
 
-    container.innerHTML = '';
-    
-    pages.forEach((pageItems, pIndex) => {
-        const isActive = pIndex === activePageIndex;
-        const glowClass = isActive ? "shadow-[0_0_40px_rgba(0,255,255,0.4)] ring-4 ring-cyan-400" : "shadow-[0_0_30px_rgba(0,0,0,0.8)] opacity-40 cursor-pointer hover:opacity-70 scale-95";
-        const wrapperScale = isActive ? "scale-100" : "scale-95";
-        
-        let itemsHtml = '';
-        if (currentPrintMode === 'idcard') {
-            itemsHtml = `<div class="absolute inset-0 content-start" style="padding-top: 15mm; padding-left: 14.4mm; padding-right: 14.4mm; display: grid; grid-template-columns: 85.6mm 85.6mm; gap: 10mm; pointer-events: none;">`;
-            pageItems.forEach(item => {
-                itemsHtml += `<div style="width: 85.6mm; height: 54mm;" class="bg-white pointer-events-auto"><img src="${item.src}" class="w-full h-full object-cover"></div>`;
-            });
-            itemsHtml += `</div>`;
-        } else {
-            itemsHtml = `<div class="absolute inset-0 pointer-events-none">`;
-            pageItems.forEach(item => {
-                if (currentPrintMode === 'large') {
-                    itemsHtml += `
+                const main = document.getElementById('mainArea');
+                const currentScroll = main ? main.scrollLeft : 0;
+
+                container.innerHTML = '';
+
+                pages.forEach((pageItems, pIndex) => {
+                    const isActive = pIndex === activePageIndex;
+                    const glowClass = isActive ? "shadow-[0_0_40px_rgba(0,255,255,0.4)] ring-4 ring-cyan-400" : "shadow-[0_0_30px_rgba(0,0,0,0.8)] opacity-40 cursor-pointer hover:opacity-70 scale-95";
+                    const wrapperScale = isActive ? "scale-100" : "scale-95";
+
+                    let itemsHtml = '';
+                    if (currentPrintMode === 'idcard') {
+                        itemsHtml = `<div class="absolute inset-0 content-start" style="padding-top: 15mm; padding-left: 14.4mm; padding-right: 14.4mm; display: grid; grid-template-columns: 85.6mm 85.6mm; gap: 10mm; pointer-events: none;">`;
+                        pageItems.forEach(item => {
+                            itemsHtml += `<div style="width: 85.6mm; height: 54mm;" class="bg-white pointer-events-auto"><img src="${item.src}" class="w-full h-full object-cover"></div>`;
+                        });
+                        itemsHtml += `</div>`;
+                    } else {
+                        itemsHtml = `<div class="absolute inset-0 pointer-events-none">`;
+                        pageItems.forEach(item => {
+                            if (currentPrintMode === 'large') {
+                                itemsHtml += `
                         <div id="qitem_${item.id}" style="position:absolute; left:${item.x}mm; top:${item.y}mm; width:${item.w}mm; height:${item.h}mm;" class="group hover:border-cyan-400 touch-none shadow-sm border border-dashed border-transparent pointer-events-auto ${isActive ? '' : 'pointer-events-none'}">
                             <img src="${item.src}" class="w-full h-full block" draggable="false" style="cursor:move;" onpointerdown="startItemDrag(event, ${item.id}, ${pIndex})">
                             
@@ -834,294 +1044,316 @@ function renderA4() {
                             <div class="absolute -bottom-1.5 -right-1.5 w-3 h-3 bg-cyan-400 rounded-full border border-slate-800 cursor-se-resize hidden group-hover:block touch-none shadow-[0_0_10px_rgba(0,255,255,0.8)] z-10" onpointerdown="startItemResize(event, ${item.id}, ${pIndex}, 'se')"></div>
                         </div>
                     `;
-                } else if (currentPrintMode === 'a4') {
-                    itemsHtml += `
+                            } else if (currentPrintMode === 'a4') {
+                                itemsHtml += `
                         <div id="qitem_${item.id}" style="position:absolute; left:${item.x}mm; top:${item.y}mm; width:${item.w}mm; height:${item.h}mm;" class="group hover:border-cyan-400 touch-none shadow-sm border border-dashed border-transparent pointer-events-auto ${isActive ? '' : 'pointer-events-none'}">
                             <img src="${item.src}" class="w-full h-full block" draggable="false" style="cursor:move;" onpointerdown="startItemDrag(event, ${item.id}, ${pIndex})">
                             <div class="absolute -bottom-1.5 -right-1.5 w-4 h-4 bg-cyan-400 rounded-full cursor-se-resize hidden group-hover:block touch-none shadow-[0_0_10px_rgba(0,255,255,0.8)] z-10" onpointerdown="startItemResize(event, ${item.id}, ${pIndex})"></div>
                         </div>
                     `;
-                }
-            });
-            itemsHtml += `</div>`;
-        }
+                            }
+                        });
+                        itemsHtml += `</div>`;
+                    }
 
-        const wrapperHtml = `
+                    const wrapperHtml = `
             <div id="pageWrap_${pIndex}" onclick="if(!${isActive}) setActivePage(${pIndex})" class="a4-wrapper relative snap-center shrink-0 transition-all duration-500 ${glowClass} ${wrapperScale}" style="overflow: hidden; background-color: #fff;">
                 <div class="a4-preview bg-white absolute top-0 left-0 origin-top-left" style="width: 210mm; height: 297mm;">
                     ${itemsHtml}
                 </div>
             </div>
         `;
-        container.insertAdjacentHTML('beforeend', wrapperHtml);
-    });
-    
-    const indicator = document.getElementById('pageIndicator');
-    if(indicator) indicator.innerText = `Page ${activePageIndex + 1} of ${pages.length}`;
-    
-    // Mirror Print Container
-    const printC = document.getElementById('printContainer');
-    printC.innerHTML = pages.map(pageItems => {
-        if (currentPrintMode === 'idcard') {
-            return `
+                    container.insertAdjacentHTML('beforeend', wrapperHtml);
+                });
+
+                const indicator = document.getElementById('pageIndicator');
+                if (indicator) indicator.innerText = `Page ${activePageIndex + 1} of ${pages.length}`;
+
+                // Mirror Print Container
+                const printC = document.getElementById('printContainer');
+                printC.innerHTML = pages.map(pageItems => {
+                    if (currentPrintMode === 'idcard') {
+                        return `
             <div style="width: 210mm; min-height: 297mm; padding-top: 15mm; padding-left: 14.4mm; padding-right: 14.4mm; display: grid; grid-template-columns: 85.6mm 85.6mm; column-gap: 10mm; row-gap: 10mm; align-content: start; page-break-after: always; background: white;">
                 ${pageItems.map(item => `<div style="width: 85.6mm; height: 54mm;"><img src="${item.src}" style="width:100%; height:100%; object-fit:cover;"></div>`).join('')}
             </div>`;
-        } else {
-            return `
+                    } else {
+                        return `
             <div style="position: relative; width: 210mm; min-height: 297mm; background: white; page-break-after: always;">
                 ${pageItems.map(item => `<div style="position: absolute; left: ${item.x}mm; top: ${item.y}mm; width: ${item.w}mm; height: ${item.h}mm;"><img src="${item.src}" style="width:100%; height:100%; object-fit:fill;"></div>`).join('')}
             </div>`;
-        }
-    }).join('');
-    
-    resizeA4();
-    if (main) {
-        main.scrollLeft = currentScroll;
-    }
-}
+                    }
+                }).join('');
 
-function startItemDrag(e, id, pIndex) {
-    if (pIndex !== activePageIndex) return;
-    e.preventDefault();
-    const item = pages[pIndex].find(i => i.id === id);
-    activeItemDrag = { item, startX: e.clientX, startY: e.clientY, initX: item.x, initY: item.y };
-}
-
-function startItemResize(e, id, pIndex, direction) {
-    if (pIndex !== activePageIndex) return;
-    e.preventDefault(); e.stopPropagation();
-    const item = pages[pIndex].find(i => i.id === id);
-    activeItemResize = { item, startX: e.clientX, startY: e.clientY, initX: item.x, initY: item.y, initW: item.w, initH: item.h, direction, aspect: item.w / item.h };
-}
-
-function rotateItem(id, pIndex) {
-    const item = pages[pIndex].find(i => i.id === id);
-    if(!item) return;
-
-    const img = new Image();
-    img.onload = () => {
-        const canvas = document.createElement('canvas');
-        canvas.width = img.height;
-        canvas.height = img.width;
-        const ctx = canvas.getContext('2d');
-        ctx.translate(canvas.width / 2, canvas.height / 2);
-        ctx.rotate(Math.PI / 2);
-        ctx.drawImage(img, -img.width / 2, -img.height / 2);
-        
-        item.src = canvas.toDataURL('image/jpeg', 1.0);
-        
-        const oldW = item.w;
-        const oldH = item.h;
-        item.w = oldH;
-        item.h = oldW;
-        
-        item.x = item.x + (oldW - item.w) / 2;
-        item.y = item.y + (oldH - item.h) / 2;
-        
-        renderA4();
-    };
-    img.src = item.src;
-}
-
-// Global handlers for dragging items
-document.addEventListener('pointermove', (e) => {
-    if (!activeItemDrag && !activeItemResize) return;
-    
-    const a4 = document.querySelector('.a4-preview');
-    if (!a4) return;
-    const scaleStr = a4.style.transform.match(/scale\(([^)]+)\)/);
-    const scale = scaleStr ? parseFloat(scaleStr[1]) : 1;
-    const mmPerPx = 1 / (3.779527559 * scale);
-
-    if (activeItemDrag) {
-        const dx = (e.clientX - activeItemDrag.startX) * mmPerPx;
-        const dy = (e.clientY - activeItemDrag.startY) * mmPerPx;
-        activeItemDrag.item.x = activeItemDrag.initX + dx;
-        activeItemDrag.item.y = activeItemDrag.initY + dy;
-        const el = document.getElementById(`qitem_${activeItemDrag.item.id}`);
-        if(el) {
-            el.style.left = `${activeItemDrag.item.x}mm`;
-            el.style.top = `${activeItemDrag.item.y}mm`;
-        }
-    }
-    
-    if (activeItemResize) {
-        const dx = (e.clientX - activeItemResize.startX) * mmPerPx;
-        const dy = (e.clientY - activeItemResize.startY) * mmPerPx;
-        
-        let dir = activeItemResize.direction;
-        let { item, initX, initY, initW, initH, aspect } = activeItemResize;
-        
-        if (dir) {
-            if (dir.includes('e')) {
-                item.w = Math.max(10, initW + dx);
-            }
-            if (dir.includes('s')) {
-                item.h = Math.max(10, initH + dy);
-            }
-            if (dir.includes('w')) {
-                let newW = initW - dx;
-                if (newW >= 10) {
-                    item.w = newW;
-                    item.x = initX + dx;
+                resizeA4();
+                if (main) {
+                    main.scrollLeft = currentScroll;
                 }
             }
-            if (dir.includes('n')) {
-                let newH = initH - dy;
-                if (newH >= 10) {
-                    item.h = newH;
-                    item.y = initY + dy;
-                }
+
+            function startItemDrag(e, id, pIndex) {
+                if (pIndex !== activePageIndex) return;
+                e.preventDefault();
+                const item = pages[pIndex].find(i => i.id === id);
+                activeItemDrag = { item, startX: e.clientX, startY: e.clientY, initX: item.x, initY: item.y };
             }
-        } else {
-            let newW = initW + dx;
-            if (newW < 10) newW = 10;
-            item.w = newW;
-            item.h = newW / aspect;
-        }
-        
-        const el = document.getElementById(`qitem_${item.id}`);
-        if(el) {
-            el.style.left = `${item.x}mm`;
-            el.style.top = `${item.y}mm`;
-            el.style.width = `${item.w}mm`;
-            el.style.height = `${item.h}mm`;
-        }
-    }
-});
 
-document.addEventListener('pointerup', () => {
-    if (activeItemDrag || activeItemResize) {
-        activeItemDrag = null;
-        activeItemResize = null;
-        renderA4(); // Update print mirror
-    }
-});
+            function startItemResize(e, id, pIndex, direction) {
+                if (pIndex !== activePageIndex) return;
+                e.preventDefault(); e.stopPropagation();
+                const item = pages[pIndex].find(i => i.id === id);
+                activeItemResize = { item, startX: e.clientX, startY: e.clientY, initX: item.x, initY: item.y, initW: item.w, initH: item.h, direction, aspect: item.w / item.h };
+            }
 
-// --- Export Functions ---
-function printSheet() {
-    if(pages.flat().length === 0) return alert("No documents to print.");
-    window.print();
-}
+            function rotateItem(id, pIndex) {
+                const item = pages[pIndex].find(i => i.id === id);
+                if (!item) return;
 
-function saveJPG() {
-    if(pages.flat().length === 0) return alert("No documents to save.");
-    
-    pages.forEach((pageItems, pIndex) => {
-        if(pageItems.length === 0) return;
-        
-        const canvas = document.createElement('canvas');
-        canvas.width = 2480;
-        canvas.height = 3508;
-        const ctx = canvas.getContext('2d');
-        
-        ctx.fillStyle = "white";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
-        let startX = 170; 
-        let startY = 177; 
-        let x = startX;
-        let y = startY;
-        
-        const draws = pageItems.map((item, i) => {
-            return new Promise(resolve => {
                 const img = new Image();
                 img.onload = () => {
-                    if (currentPrintMode === 'idcard') {
-                        ctx.drawImage(img, x, y, TARGET_W, TARGET_H);
-                        if (i % 2 === 0) {
-                            x += TARGET_W + 118; 
-                        } else {
-                            x = startX;
-                            y += TARGET_H + 118; 
-                        }
-                    } else {
-                        // Absolute positioning
-                        ctx.drawImage(img, item.x * 11.811, item.y * 11.811, item.w * 11.811, item.h * 11.811);
-                    }
-                    resolve();
+                    const canvas = document.createElement('canvas');
+                    canvas.width = img.height;
+                    canvas.height = img.width;
+                    const ctx = canvas.getContext('2d');
+                    ctx.translate(canvas.width / 2, canvas.height / 2);
+                    ctx.rotate(Math.PI / 2);
+                    ctx.drawImage(img, -img.width / 2, -img.height / 2);
+
+                    item.src = canvas.toDataURL('image/jpeg', 1.0);
+
+                    const oldW = item.w;
+                    const oldH = item.h;
+                    item.w = oldH;
+                    item.h = oldW;
+
+                    item.x = item.x + (oldW - item.w) / 2;
+                    item.y = item.y + (oldH - item.h) / 2;
+
+                    renderA4();
                 };
                 img.src = item.src;
-            });
-        });
-
-        Promise.all(draws).then(() => {
-            const link = document.createElement('a');
-            link.download = `RCC_Print_Page_${pIndex + 1}.jpg`;
-            link.href = canvas.toDataURL('image/jpeg', 1.0); 
-            link.click();
-        });
-    });
-}
-
-function savePDF() {
-    if(pages.flat().length === 0) return alert("No documents to save.");
-    if (!window.jspdf) return alert("jsPDF is still loading...");
-    
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-    
-    pages.forEach((pageItems, pIndex) => {
-        if (pIndex > 0) doc.addPage();
-        
-        let startX = 14.4; 
-        let startY = 15;   
-        let gapX = 10;
-        let gapY = 10;
-        
-        let x = startX;
-        let y = startY;
-        
-        pageItems.forEach((item, i) => {
-            if (currentPrintMode === 'idcard') {
-                doc.addImage(item.src, 'JPEG', x, y, 85.6, 54);
-                if (i % 2 === 0) {
-                    x += 85.6 + gapX; 
-                } else {
-                    x = startX;
-                    y += 54 + gapY;
-                }
-            } else {
-                doc.addImage(item.src, 'JPEG', item.x, item.y, item.w, item.h);
             }
-        });
-    });
-    
-    doc.save('RCC_Print_Document.pdf');
-}
 
-// --- Dynamic A4 Preview Scaling ---
-function resizeA4() {
-    const main = document.getElementById('mainArea');
-    if (!main) return;
-    
-    const a4W = 793.7;
-    const a4H = 1122.5;
-    
-    const padding = 80;
-    const availableW = main.clientWidth - padding;
-    const availableH = main.clientHeight - padding;
-    
-    let scale = Math.min(availableW / a4W, availableH / a4H);
-    if (scale > 1.2) scale = 1.2;
-    
-    document.querySelectorAll('.a4-wrapper').forEach(wrapper => {
-        wrapper.style.width = `${a4W * scale}px`;
-        wrapper.style.height = `${a4H * scale}px`;
-    });
-    
-    document.querySelectorAll('.a4-preview').forEach(a4 => {
-        a4.style.transform = `scale(${scale})`;
-    });
-}
+            // Global handlers for dragging items
+            document.addEventListener('pointermove', (e) => {
+                if (!activeItemDrag && !activeItemResize) return;
 
-// Resize event listeners
-window.addEventListener('resize', resizeA4);
-document.addEventListener('DOMContentLoaded', resizeA4);
-// Initial execution with slight delay to ensure layout is ready
-setTimeout(resizeA4, 100);
-</script>
-</div> <!-- Close App Container -->
+                const a4 = document.querySelector('.a4-preview');
+                if (!a4) return;
+                const scaleStr = a4.style.transform.match(/scale\(([^)]+)\)/);
+                const scale = scaleStr ? parseFloat(scaleStr[1]) : 1;
+                const mmPerPx = 1 / (3.779527559 * scale);
+
+                if (activeItemDrag) {
+                    const dx = (e.clientX - activeItemDrag.startX) * mmPerPx;
+                    const dy = (e.clientY - activeItemDrag.startY) * mmPerPx;
+                    activeItemDrag.item.x = activeItemDrag.initX + dx;
+                    activeItemDrag.item.y = activeItemDrag.initY + dy;
+                    const el = document.getElementById(`qitem_${activeItemDrag.item.id}`);
+                    if (el) {
+                        el.style.left = `${activeItemDrag.item.x}mm`;
+                        el.style.top = `${activeItemDrag.item.y}mm`;
+                    }
+                }
+
+                if (activeItemResize) {
+                    const dx = (e.clientX - activeItemResize.startX) * mmPerPx;
+                    const dy = (e.clientY - activeItemResize.startY) * mmPerPx;
+
+                    let dir = activeItemResize.direction;
+                    let { item, initX, initY, initW, initH, aspect } = activeItemResize;
+
+                    if (dir) {
+                        if (dir.includes('e')) {
+                            item.w = Math.max(10, initW + dx);
+                        }
+                        if (dir.includes('s')) {
+                            item.h = Math.max(10, initH + dy);
+                        }
+                        if (dir.includes('w')) {
+                            let newW = initW - dx;
+                            if (newW >= 10) {
+                                item.w = newW;
+                                item.x = initX + dx;
+                            }
+                        }
+                        if (dir.includes('n')) {
+                            let newH = initH - dy;
+                            if (newH >= 10) {
+                                item.h = newH;
+                                item.y = initY + dy;
+                            }
+                        }
+                    } else {
+                        let newW = initW + dx;
+                        if (newW < 10) newW = 10;
+                        item.w = newW;
+                        item.h = newW / aspect;
+                    }
+
+                    const el = document.getElementById(`qitem_${item.id}`);
+                    if (el) {
+                        el.style.left = `${item.x}mm`;
+                        el.style.top = `${item.y}mm`;
+                        el.style.width = `${item.w}mm`;
+                        el.style.height = `${item.h}mm`;
+                    }
+                }
+            });
+
+            document.addEventListener('pointerup', () => {
+                if (activeItemDrag || activeItemResize) {
+                    activeItemDrag = null;
+                    activeItemResize = null;
+                    renderA4(); // Update print mirror
+                }
+            });
+
+            // --- Export Functions ---
+            function printSheet() {
+                if (pages.flat().length === 0) return alert("No documents to print.");
+                window.print();
+            }
+
+            function saveJPG() {
+                if (pages.flat().length === 0) return alert("No documents to save.");
+
+                pages.forEach((pageItems, pIndex) => {
+                    if (pageItems.length === 0) return;
+
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 2480;
+                    canvas.height = 3508;
+                    const ctx = canvas.getContext('2d');
+
+                    ctx.fillStyle = "white";
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                    let startX = 170;
+                    let startY = 177;
+                    let x = startX;
+                    let y = startY;
+
+                    const draws = pageItems.map((item, i) => {
+                        return new Promise(resolve => {
+                            const img = new Image();
+                            img.onload = () => {
+                                if (currentPrintMode === 'idcard') {
+                                    ctx.drawImage(img, x, y, TARGET_W, TARGET_H);
+                                    if (i % 2 === 0) {
+                                        x += TARGET_W + 118;
+                                    } else {
+                                        x = startX;
+                                        y += TARGET_H + 118;
+                                    }
+                                } else {
+                                    // Absolute positioning
+                                    ctx.drawImage(img, item.x * 11.811, item.y * 11.811, item.w * 11.811, item.h * 11.811);
+                                }
+                                resolve();
+                            };
+                            img.src = item.src;
+                        });
+                    });
+
+                    Promise.all(draws).then(() => {
+                        const link = document.createElement('a');
+                        link.download = `RCC_Print_Page_${pIndex + 1}.jpg`;
+                        link.href = canvas.toDataURL('image/jpeg', 1.0);
+                        link.click();
+                    });
+                });
+            }
+
+            function savePDF() {
+                if (pages.flat().length === 0) return alert("No documents to save.");
+                if (!window.jspdf) return alert("jsPDF is still loading...");
+
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+                pages.forEach((pageItems, pIndex) => {
+                    if (pIndex > 0) doc.addPage();
+
+                    let startX = 14.4;
+                    let startY = 15;
+                    let gapX = 10;
+                    let gapY = 10;
+
+                    let x = startX;
+                    let y = startY;
+
+                    pageItems.forEach((item, i) => {
+                        if (currentPrintMode === 'idcard') {
+                            doc.addImage(item.src, 'JPEG', x, y, 85.6, 54);
+                            if (i % 2 === 0) {
+                                x += 85.6 + gapX;
+                            } else {
+                                x = startX;
+                                y += 54 + gapY;
+                            }
+                        } else {
+                            doc.addImage(item.src, 'JPEG', item.x, item.y, item.w, item.h);
+                        }
+                    });
+                });
+
+                doc.save('RCC_Print_Document.pdf');
+            }
+
+            // --- Dynamic A4 Preview Scaling ---
+            function resizeA4() {
+                const main = document.getElementById('mainArea');
+                if (!main) return;
+
+                const a4W = 793.7;
+                const a4H = 1122.5;
+
+                const padding = 80;
+                const availableW = main.clientWidth - padding;
+                const availableH = main.clientHeight - padding;
+
+                let scale = Math.min(availableW / a4W, availableH / a4H);
+                if (scale > 1.2) scale = 1.2;
+
+                document.querySelectorAll('.a4-wrapper').forEach(wrapper => {
+                    wrapper.style.width = `${a4W * scale}px`;
+                    wrapper.style.height = `${a4H * scale}px`;
+                });
+
+                document.querySelectorAll('.a4-preview').forEach(a4 => {
+                    a4.style.transform = `scale(${scale})`;
+                });
+            }
+
+            // Resize event listeners
+            window.addEventListener('resize', resizeA4);
+            document.addEventListener('DOMContentLoaded', resizeA4);
+            // Initial execution with slight delay to ensure layout is ready
+            setTimeout(resizeA4, 100);
+
+            // Mobile Menu Toggle
+            window.toggleMobileMenu = function(event) {
+                if (event) event.stopPropagation();
+                const menu = document.getElementById('mobile-menu');
+                const btn = document.getElementById('mobile-toggle-btn');
+                
+                menu.classList.toggle('menu-open');
+                btn.classList.toggle('hamburger-open');
+            };
+
+            document.addEventListener("click", function(event) {
+                const menu = document.getElementById('mobile-menu');
+                const btn = document.getElementById('mobile-toggle-btn');
+                if (menu && btn && menu.classList.contains('menu-open')) {
+                    if (!menu.contains(event.target) && !btn.contains(event.target)) {
+                        menu.classList.remove('menu-open');
+                        btn.classList.remove('hamburger-open');
+                    }
+                }
+            });
+        </script>
+    </div> <!-- Close App Container -->
 </body>
+
 </html>
