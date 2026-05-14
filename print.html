@@ -59,9 +59,59 @@ body { font-family: 'Outfit', sans-serif; background: #020617; color: white; ove
             <i class="fa-solid fa-microchip text-cyan-400"></i>
             RCC<span class="text-cyan-400">.</span> Auto Suite
         </a>
-        <a href="index.html" class="flex items-center gap-2 text-xs font-bold text-slate-300 hover:text-cyan-400 transition bg-slate-800/50 px-4 py-2 rounded-lg border border-slate-700 hover:border-cyan-500/50">
-            <i class="fa-solid fa-house"></i> Home
-        </a>
+
+
+
+
+    <!-- Navigation -->
+    <nav class="py-4">
+        <div class="container mx-auto px-6 flex justify-between items-center">
+            <a href="index.html"
+                class="text-2xl font-black tracking-wider flex items-center gap-2 hover:scale-105 transition-transform duration-300 drop-shadow-[0_0_10px_rgba(0,255,255,0.8)]">
+                <i class="fa-solid fa-microchip text-cyan-400"></i>
+                RCC<span class="text-cyan-400">.</span>
+            </a>
+
+            <!-- Desktop Nav -->
+            <div class="hidden md:flex space-x-8 text-sm font-semibold text-slate-300 items-center">
+                <a href="index.html" class="nav-link" data-tab="home">Home</a>
+                <a href="services.html" class="nav-link active" data-tab="services">Services</a>
+                <a href="updates.html" class="nav-link" data-tab="sarkari">Updates</a>
+                <a href="print.html" class="nav-link" data-tab="print">Print Tools</a>
+                <a href="contact.html" class="nav-link" data-tab="contact">Contact</a>
+                <a href="booking.html"
+                    class="px-5 py-2 bg-violet-600 text-white font-bold rounded-lg hover:bg-violet-500 transition shadow-[0_0_10px_rgba(139,92,246,0.4)]">Book
+                    Now</a>
+            </div>
+
+            <!-- Mobile Toggle -->
+            <button id="mobile-toggle-btn"
+                class="hamburger md:hidden focus:outline-none flex flex-col justify-center items-center w-8 h-8 gap-1.5 z-50"
+                onclick="toggleMobileMenu(event)">
+                <span class="bg-slate-300 block transition-all duration-300 ease-out h-[2px] w-6 rounded-sm"></span>
+                <span class="bg-slate-300 block transition-all duration-300 ease-out h-[2px] w-6 rounded-sm"></span>
+                <span class="bg-slate-300 block transition-all duration-300 ease-out h-[2px] w-6 rounded-sm"></span>
+            </button>
+        </div>
+
+        <!-- Mobile Nav -->
+        <div id="mobile-menu"
+            class="md:hidden bg-slate-900 border-t border-slate-800 absolute w-full left-0 shadow-2xl z-40 top-full menu-closed overflow-hidden">
+            <div class="flex flex-col px-6 py-4 space-y-4 font-semibold">
+                <a href="index.html" class="nav-link" data-tab="home">Home</a>
+                <a href="services.html" class="nav-link active" data-tab="services">Services</a>
+                <a href="updates.html" class="nav-link" data-tab="sarkari">Updates</a>
+                <a href="print.html" class="nav-link" data-tab="print">Print Tools</a>
+                <a href="contact.html" class="nav-link" data-tab="contact">Contact</a>
+                <a href="booking.html" class="text-violet-400">Book Now</a>
+            </div>
+        </div>
+    </nav>
+
+
+
+
+        
     </div>
 </nav>
 
