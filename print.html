@@ -209,6 +209,13 @@
 
 <body class="flex flex-col h-screen text-slate-200 bg-[#020617]">
 
+    <!-- SVG Filters -->
+    <svg style="width:0; height:0; position:absolute;" aria-hidden="true" focusable="false">
+        <filter id="svgSharpen">
+            <feConvolveMatrix id="sharpMatrix" order="3 3" preserveAlpha="true" kernelMatrix="0 0 0 0 1 0 0 0 0"/>
+        </filter>
+    </svg>
+
     <!-- Print Container (Hidden in UI, only visible when printing) -->
     <div id="printContainer" class="hidden bg-white w-full min-h-screen"></div>
 
@@ -432,6 +439,8 @@
                     <div class="flex gap-2">
                         <button onclick="autoCrop()"
                             class="px-2 py-1 bg-slate-800 text-[10px] text-slate-300 rounded border border-slate-700 hover:border-cyan-400 font-bold transition-colors">Auto Crop</button>
+                        <button onclick="fullCrop()"
+                            class="px-2 py-1 bg-slate-800 text-[10px] text-slate-300 rounded border border-slate-700 hover:border-cyan-400 font-bold transition-colors">Full Image</button>
                         <button id="btnUpscale" onclick="toggleUpscale()"
                             class="px-2 py-1 bg-slate-800 text-[10px] text-slate-300 rounded border border-slate-700 hover:border-cyan-400 font-bold transition-colors">HD</button>
                         <button onclick="rotateCrop()"
@@ -465,6 +474,20 @@
                                 <span>Contrast</span> <span id="valContrast" class="text-violet-400">20</span>
                             </div>
                             <input type="range" min="-50" max="100" value="20" id="inpContrast" class="range-slider"
+                                oninput="updateFilters()">
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-xs font-bold text-slate-400 mb-3">
+                                <span>Saturation</span> <span id="valSaturation" class="text-pink-400">120</span>
+                            </div>
+                            <input type="range" min="0" max="200" value="120" id="inpSaturation" class="range-slider"
+                                oninput="updateFilters()">
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-xs font-bold text-slate-400 mb-3">
+                                <span>Sharpness</span> <span id="valSharpness" class="text-emerald-400">5</span>
+                            </div>
+                            <input type="range" min="0" max="20" value="5" id="inpSharpness" class="range-slider"
                                 oninput="updateFilters()">
                         </div>
                     </div>
@@ -604,6 +627,20 @@
 
                 src.delete(); small.delete(); gray.delete(); edged.delete(); contours.delete(); hierarchy.delete();
                 if (maxContour) maxContour.delete();
+            }
+
+            function fullCrop() {
+                if (!rawImageObj) return;
+                const padding = 0;
+                const w = cropCanvas.width;
+                const h = cropCanvas.height;
+                cropperPoints = [
+                    { x: padding, y: padding },
+                    { x: w - padding, y: padding },
+                    { x: w - padding, y: h - padding },
+                    { x: padding, y: h - padding }
+                ];
+                drawEditor();
             }
 
             function addNewPage() {
@@ -1012,16 +1049,22 @@
                     document.getElementById('filterOrig').className = origActiveClasses;
                     document.getElementById('inpBright').value = 0;
                     document.getElementById('inpContrast').value = 0;
+                    document.getElementById('inpSaturation').value = 100;
+                    document.getElementById('inpSharpness').value = 0;
                 }
                 if (type === 'magic') {
                     document.getElementById('filterMagic').className = magicActiveClasses;
                     document.getElementById('inpBright').value = 10;
                     document.getElementById('inpContrast').value = 20;
+                    document.getElementById('inpSaturation').value = 120;
+                    document.getElementById('inpSharpness').value = 5;
                 }
                 if (type === 'bw') {
                     document.getElementById('filterBW').className = bwActiveClasses;
                     document.getElementById('inpBright').value = 15;
                     document.getElementById('inpContrast').value = 30;
+                    document.getElementById('inpSaturation').value = 0;
+                    document.getElementById('inpSharpness').value = 10;
                 }
 
                 updateFilters();
@@ -1030,13 +1073,22 @@
             function updateFilters() {
                 let b = document.getElementById('inpBright').value;
                 let c = document.getElementById('inpContrast').value;
+                let sat = document.getElementById('inpSaturation').value;
+                let sh = document.getElementById('inpSharpness').value;
+                
                 document.getElementById('valBright').innerText = b;
                 document.getElementById('valContrast').innerText = c;
+                document.getElementById('valSaturation').innerText = sat;
+                document.getElementById('valSharpness').innerText = sh;
+
+                // Update SVG Sharpen filter
+                let s = parseInt(sh) / 10;
+                let center = 1 + 4 * s;
+                let edge = -s;
+                document.getElementById('sharpMatrix').setAttribute('kernelMatrix', `0 ${edge} 0 ${edge} ${center} ${edge} 0 ${edge} 0`);
 
                 // Apply CSS filters to the canvas element for live preview
-                let filterString = `brightness(${100 + parseInt(b)}%) contrast(${100 + parseInt(c)}%)`;
-                if (currentFilter === 'magic') filterString += ` saturate(120%) drop-shadow(0 0 0px #000)`;
-                if (currentFilter === 'bw') filterString += ` grayscale(100%)`;
+                let filterString = `brightness(${100 + parseInt(b)}%) contrast(${100 + parseInt(c)}%) saturate(${sat}%) url(#svgSharpen)`;
 
                 cropCanvas.style.filter = filterString;
                 drawEditor(); // Redraw context
@@ -1117,9 +1169,9 @@
 
                 let b = document.getElementById('inpBright').value;
                 let c = document.getElementById('inpContrast').value;
-                let filterString = `brightness(${100 + parseInt(b)}%) contrast(${100 + parseInt(c)}%)`;
-                if (currentFilter === 'magic') filterString += ` saturate(120%) drop-shadow(0 0 0px #000)`;
-                if (currentFilter === 'bw') filterString += ` grayscale(100%)`;
+                let sat = document.getElementById('inpSaturation').value;
+                let sh = document.getElementById('inpSharpness').value;
+                let filterString = `brightness(${100 + parseInt(b)}%) contrast(${100 + parseInt(c)}%) saturate(${sat}%) url(#svgSharpen)`;
 
                 fCtx.filter = filterString;
                 fCtx.drawImage(tempCanvas, 0, 0);
@@ -1262,7 +1314,7 @@
                     }
 
                     const wrapperHtml = `
-            <div id="pageWrap_${pIndex}" onclick="if(!${isActive}) setActivePage(${pIndex})" class="a4-wrapper relative snap-center shrink-0 transition-all duration-500 ${glowClass} ${wrapperScale}" style="overflow: hidden; background-color: #fff;">
+            <div id="pageWrap_${pIndex}" onclick="if(!${isActive}) setActivePage(${pIndex})" class="a4-wrapper relative snap-center shrink-0 transition-all duration-500 ${glowClass} ${wrapperScale}" style="overflow: visible; background-color: #fff; z-index: ${isActive ? 20 : 10};">
                 <div class="a4-preview bg-white absolute top-0 left-0 origin-top-left" style="width: 210mm; height: 297mm;">
                     ${itemsHtml}
                 </div>
@@ -1408,9 +1460,42 @@
 
             document.addEventListener('pointerup', () => {
                 if (activeItemDrag || activeItemResize) {
+                    let pageChanged = false;
+                    
+                    if (activeItemDrag) {
+                        const item = activeItemDrag.item;
+                        const centerX = item.x + (item.w / 2);
+                        
+                        // Move to next page if dragged right
+                        if (centerX > 210) {
+                            pages[activePageIndex] = pages[activePageIndex].filter(i => i.id !== item.id);
+                            item.x = item.x - 220; // 210mm width + 10mm visual gap approx
+                            if (activePageIndex === pages.length - 1) {
+                                pages.push([]);
+                            }
+                            pages[activePageIndex + 1].push(item);
+                            activePageIndex++;
+                            pageChanged = true;
+                        } 
+                        // Move to previous page if dragged left
+                        else if (centerX < 0 && activePageIndex > 0) {
+                            pages[activePageIndex] = pages[activePageIndex].filter(i => i.id !== item.id);
+                            item.x = item.x + 220; 
+                            pages[activePageIndex - 1].push(item);
+                            activePageIndex--;
+                            pageChanged = true;
+                        }
+                    }
+
                     activeItemDrag = null;
                     activeItemResize = null;
-                    renderA4(); // Update print mirror
+                    
+                    if (pageChanged) {
+                        renderQueueList();
+                        setTimeout(() => scrollToPage(activePageIndex), 100);
+                    }
+                    
+                    renderA4(); // Update print mirror and UI
                 }
             });
 
