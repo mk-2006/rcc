@@ -220,11 +220,9 @@
     <div id="printContainer" class="hidden bg-white w-full min-h-screen"></div>
 
     <!-- Loading Screen for OpenCV -->
-    <div id="loaderScreen" class="fixed inset-0 bg-[#020617] z-[100] flex flex-col items-center justify-center">
-        <div class="loader mb-4"></div>
-        <p id="loaderText"
-            class="text-xs text-cyan-400 font-bold tracking-widest drop-shadow-[0_0_5px_rgba(0,255,255,0.5)]">LOADING
-            YOUR DOCUMENT ENGINE...</p>
+    <div id="loaderScreen" class="fixed bottom-4 right-4 bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 shadow-2xl z-[100] flex items-center gap-3 transition-opacity duration-500">
+        <div class="loader w-4 h-4 border-2 border-slate-600 border-t-cyan-400"></div>
+        <p id="loaderText" class="text-[10px] text-cyan-400 font-bold tracking-widest">LOADING ENGINE...</p>
     </div>
 
     <!-- Navigation -->
@@ -425,9 +423,13 @@
 
                 <!-- The actual drawing area -->
                 <div id="canvasContainer"
-                    class="w-full h-full flex items-center justify-center overflow-auto p-10 relative">
-                    <canvas id="cropCanvas" class="shadow-[0_0_40px_rgba(0,0,0,0.8)]"
-                        style="transform-origin: center center;"></canvas>
+                    class="w-full h-full overflow-auto p-10 relative">
+                    <div id="editorWrapper" class="relative" style="transform-origin: top left;">
+                        <canvas id="bgCanvas" class="absolute top-0 left-0 w-full h-full pointer-events-none"></canvas>
+                        <canvas id="paintCanvas" class="absolute top-0 left-0 w-full h-full pointer-events-none"></canvas>
+                        <canvas id="highlightCanvas" class="absolute top-0 left-0 w-full h-full pointer-events-none opacity-40 mix-blend-multiply"></canvas>
+                        <canvas id="cropCanvas" class="absolute top-0 left-0 w-full h-full shadow-[0_0_40px_rgba(0,0,0,0.8)] touch-none"></canvas>
+                    </div>
                 </div>
             </div>
 
@@ -452,13 +454,19 @@
                 </div>
 
                 <div class="flex-1 overflow-y-auto p-6 space-y-6">
-                    <div class="flex bg-slate-800/50 p-1 rounded-xl border border-slate-700">
-                        <button onclick="setFilter('orig')" id="filterOrig"
-                            class="flex-1 py-2.5 text-xs font-bold rounded-lg text-slate-400 hover:text-white transition-colors">Orig</button>
-                        <button onclick="setFilter('magic')" id="filterMagic"
-                            class="flex-1 py-2.5 text-xs font-bold rounded-lg text-slate-900 bg-cyan-400 shadow-[0_0_10px_rgba(0,255,255,0.4)] transition-colors">Magic</button>
-                        <button onclick="setFilter('bw')" id="filterBW"
-                            class="flex-1 py-2.5 text-xs font-bold rounded-lg text-slate-400 hover:text-white transition-colors">B&W</button>
+                    <div id="filterContainer" class="flex overflow-x-auto hide-scrollbar bg-slate-800/50 p-1 rounded-xl border border-slate-700 gap-1 snap-x">
+                        <button onclick="setFilter('orig')" id="filter_orig" class="filter-btn active shrink-0 px-4 py-2 text-xs font-bold rounded-lg transition-colors snap-center">Orig</button>
+                        <button onclick="setFilter('magic')" id="filter_magic" class="filter-btn shrink-0 px-4 py-2 text-xs font-bold rounded-lg transition-colors snap-center">Magic</button>
+                        <button onclick="setFilter('vivid_light')" id="filter_vivid_light" class="filter-btn shrink-0 px-4 py-2 text-xs font-bold rounded-lg transition-colors snap-center">Vivid</button>
+                        <button onclick="setFilter('contrast_bw')" id="filter_contrast_bw" class="filter-btn shrink-0 px-4 py-2 text-xs font-bold rounded-lg transition-colors snap-center">Contrast B&W</button>
+                        <button onclick="setFilter('vibrant')" id="filter_vibrant" class="filter-btn shrink-0 px-4 py-2 text-xs font-bold rounded-lg transition-colors snap-center">Vibrant</button>
+                        <button onclick="setFilter('soft_tone')" id="filter_soft_tone" class="filter-btn shrink-0 px-4 py-2 text-xs font-bold rounded-lg transition-colors snap-center">Soft</button>
+                        <button onclick="setFilter('sharp_black')" id="filter_sharp_black" class="filter-btn shrink-0 px-4 py-2 text-xs font-bold rounded-lg transition-colors snap-center">Sharp Black</button>
+                        <button onclick="setFilter('ocv_color')" id="filter_ocv_color" class="filter-btn shrink-0 px-4 py-2 text-xs font-bold rounded-lg transition-colors snap-center">OCV Color</button>
+                        <button onclick="setFilter('ocv_black')" id="filter_ocv_black" class="filter-btn shrink-0 px-4 py-2 text-xs font-bold rounded-lg transition-colors snap-center">OCV Black</button>
+                        <button onclick="setFilter('carbon_black')" id="filter_carbon_black" class="filter-btn shrink-0 px-4 py-2 text-xs font-bold rounded-lg transition-colors snap-center">Carbon Black</button>
+                        <button onclick="setFilter('color_pop')" id="filter_color_pop" class="filter-btn shrink-0 px-4 py-2 text-xs font-bold rounded-lg transition-colors snap-center">Color Pop</button>
+                        <button onclick="setFilter('color_effect')" id="filter_color_effect" class="filter-btn shrink-0 px-4 py-2 text-xs font-bold rounded-lg transition-colors snap-center">Effect</button>
                     </div>
 
                     <div class="space-y-5">
@@ -490,6 +498,45 @@
                             <input type="range" min="0" max="20" value="5" id="inpSharpness" class="range-slider"
                                 oninput="updateFilters()">
                         </div>
+                        <div>
+                            <div class="flex justify-between text-xs font-bold text-slate-400 mb-3">
+                                <span>Exposure</span> <span id="valExposure" class="text-yellow-400">0</span>
+                            </div>
+                            <input type="range" min="-100" max="100" value="0" id="inpExposure" class="range-slider"
+                                oninput="updateFilters()">
+                        </div>
+                    </div>
+
+                    <!-- Markup Tool Section -->
+                    <div class="pt-4 border-t border-slate-800 space-y-4">
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs font-bold text-slate-200">MARKUP TOOL</span>
+                            <div class="flex gap-2 bg-slate-800/50 p-1 rounded-lg border border-slate-700">
+                                <button id="btnToolCrop" onclick="setEditorTool('crop')" class="tool-btn active px-3 py-1.5 text-[10px] font-bold rounded transition-colors bg-cyan-400 text-slate-900 shadow-[0_0_10px_rgba(0,255,255,0.4)]">Crop</button>
+                                <button id="btnToolDraw" onclick="setEditorTool('draw')" class="tool-btn px-3 py-1.5 text-[10px] font-bold rounded transition-colors text-slate-400 hover:text-white">Draw</button>
+                            </div>
+                        </div>
+
+                        <div id="drawControls" class="hidden space-y-4">
+                            <div class="flex bg-slate-800/50 p-1 rounded-xl border border-slate-700">
+                                <button onclick="setBrushMode('brush')" id="btnBrushBrush" class="brush-btn active flex-1 py-2 text-[10px] font-bold rounded-lg bg-violet-600 text-white shadow-[0_0_10px_rgba(139,92,246,0.5)] transition-colors">Brush</button>
+                                <button onclick="setBrushMode('highlight')" id="btnBrushHighlight" class="brush-btn flex-1 py-2 text-[10px] font-bold rounded-lg text-slate-400 hover:text-white transition-colors">Highlight</button>
+                                <button onclick="setBrushMode('erase')" id="btnBrushErase" class="brush-btn flex-1 py-2 text-[10px] font-bold rounded-lg text-slate-400 hover:text-white transition-colors">Erase</button>
+                            </div>
+                            
+                            <div class="flex items-center gap-3">
+                                <div class="flex-1">
+                                    <div class="flex justify-between text-[10px] font-bold text-slate-400 mb-2">
+                                        <span>Size</span> <span id="valBrushSize" class="text-white">20</span>
+                                    </div>
+                                    <input type="range" min="1" max="400" value="20" id="inpBrushSize" class="range-slider" oninput="updateBrushSettings()">
+                                </div>
+                                <div class="w-10 h-10 rounded-full overflow-hidden border-2 border-slate-600 shrink-0 relative cursor-pointer" title="Color Picker">
+                                    <input type="color" id="inpBrushColor" value="#ff0000" class="absolute -inset-2 w-14 h-14 cursor-pointer border-none p-0" oninput="updateBrushSettings()">
+                                </div>
+                            </div>
+                            <button onclick="clearPaintCanvas()" class="w-full py-2 border border-red-500/30 text-red-400 text-[10px] font-bold rounded-lg hover:bg-red-500/10 transition-colors">Clear Drawing</button>
+                        </div>
                     </div>
                 </div>
 
@@ -518,6 +565,7 @@
             let draggingPointIndex = -1;
             let scaleFactor = 1;
             let editorZoom = 1;
+            let renderScale = 1;
 
             let currentPrintMode = 'idcard'; // idcard, large, a4
 
@@ -529,6 +577,22 @@
             let pages = [[]]; // Array of pages, each containing items { id, side, src, x, y, w, h }
             let activePageIndex = 0;
             let isUpscale = false;
+
+            // Markup State
+            let paintCanvas = null;
+            let paintCtx = null;
+            let highlightCanvas = null;
+            let highlightCtx = null;
+            let cachedBgCanvas = null;
+            let editorTool = 'crop'; // 'crop' or 'draw'
+            let brushMode = 'brush'; // 'brush', 'highlight', 'erase'
+            let brushSize = 20;
+            let brushColor = '#ff0000';
+            let isDrawing = false;
+            let strokePath = [];
+            let lastDrawX = 0;
+            let lastDrawY = 0;
+            let activeBaseFilter = '';
 
             function toggleUpscale() {
                 isUpscale = !isUpscale;
@@ -558,9 +622,9 @@
             }
 
             function autoCrop() {
-                if (!cvReady || !rawImageObj) return;
+                if (!cvReady || !cachedBgCanvas) return;
                 
-                let src = cv.imread(rawImageObj);
+                let src = cv.imread(cachedBgCanvas);
                 let processScale = Math.min(1.0, 800 / Math.max(src.cols, src.rows));
                 let small = new cv.Mat();
                 cv.resize(src, small, new cv.Size(0, 0), processScale, processScale, cv.INTER_AREA);
@@ -598,8 +662,8 @@
                     let pts = [];
                     for (let i = 0; i < 4; i++) {
                         pts.push({ 
-                            x: (maxContour.data32S[i * 2] / processScale) * scaleFactor, 
-                            y: (maxContour.data32S[i * 2 + 1] / processScale) * scaleFactor 
+                            x: (maxContour.data32S[i * 2] / processScale), 
+                            y: (maxContour.data32S[i * 2 + 1] / processScale) 
                         });
                     }
                     
@@ -700,7 +764,6 @@
 
             // --- Upload Handling ---
             function handleUpload(event, side) {
-                if (!cvReady) return alert('Please wait for the image processing engine to load.');
                 const file = event.target.files[0];
                 if (!file) return;
 
@@ -735,49 +798,114 @@
                 const maxW = window.innerWidth - sidebarW - padX;
                 const maxH = window.innerHeight - sidebarH - padY;
 
-                scaleFactor = Math.min(Math.max(10, maxW) / rawImageObj.width, Math.max(10, maxH) / rawImageObj.height);
-                if (scaleFactor > 1) scaleFactor = 1; // Prevent upscale blurring
+                // Calculate render scale to downscale large images for smooth editing
+                const MAX_EDIT_RES = 1200;
+                renderScale = Math.min(1.0, MAX_EDIT_RES / Math.max(rawImageObj.width, rawImageObj.height));
 
-                cropCanvas.width = rawImageObj.width * scaleFactor;
-                cropCanvas.height = rawImageObj.height * scaleFactor;
+                const editW = rawImageObj.width * renderScale;
+                const editH = rawImageObj.height * renderScale;
+
+                let initScale = Math.min(Math.max(10, maxW) / editW, Math.max(10, maxH) / editH);
+                if (initScale > 1) initScale = 1;
+
+                cropCanvas.width = editW;
+                cropCanvas.height = editH;
+
+                // Cached BG for fast drawing
+                cachedBgCanvas = document.getElementById('bgCanvas');
+                cachedBgCanvas.width = editW;
+                cachedBgCanvas.height = editH;
+                cachedBgCanvas.getContext('2d').clearRect(0, 0, editW, editH);
+                cachedBgCanvas.getContext('2d').drawImage(rawImageObj, 0, 0, editW, editH);
+
+                // Initialize Paint Canvas
+                paintCanvas = document.getElementById('paintCanvas');
+                paintCanvas.width = editW;
+                paintCanvas.height = editH;
+                paintCtx = paintCanvas.getContext('2d');
+                paintCtx.clearRect(0, 0, editW, editH);
+
+                // Initialize Highlight Canvas
+                highlightCanvas = document.getElementById('highlightCanvas');
+                highlightCanvas.width = editW;
+                highlightCanvas.height = editH;
+                highlightCtx = highlightCanvas.getContext('2d');
+                highlightCtx.clearRect(0, 0, editW, editH);
 
                 // Initialize 4 perspective points
-                const padding = 20;
                 const w = cropCanvas.width;
                 const h = cropCanvas.height;
+                const pX = w * 0.05;
+                const pY = h * 0.05;
                 cropperPoints = [
-                    { x: padding, y: padding }, // Top-Left
-                    { x: w - padding, y: padding }, // Top-Right
-                    { x: w - padding, y: h - padding }, // Bottom-Right
-                    { x: padding, y: h - padding } // Bottom-Left
+                    { x: pX, y: pY }, // Top-Left
+                    { x: w - pX, y: pY }, // Top-Right
+                    { x: w - pX, y: h - pY }, // Bottom-Right
+                    { x: pX, y: h - pY } // Bottom-Left
                 ];
 
-                editorZoom = 1;
+                editorZoom = initScale;
                 applyEditorZoom();
-                setFilter('magic'); // Automatically apply magic filter on open
+                setFilter('magic'); 
+                drawEditor();
             }
 
             function closeEditor() {
                 document.getElementById('editorModal').classList.add('hidden');
                 rawImageObj = null;
+                if (cachedBgCanvas) cachedBgCanvas.width = 0;
+                if (paintCanvas) paintCanvas.width = 0;
+                if (highlightCanvas) highlightCanvas.width = 0;
+                cachedBgCanvas = null;
+                paintCanvas = null;
+                paintCtx = null;
+                highlightCanvas = null;
+                highlightCtx = null;
+                strokePath = [];
             }
 
             function zoomEditor(factor) {
                 editorZoom *= factor;
                 // Clamp zoom
-                if (editorZoom < 0.5) editorZoom = 0.5;
-                if (editorZoom > 3.0) editorZoom = 3.0;
+                if (editorZoom < 0.05) editorZoom = 0.05;
+                if (editorZoom > 5.0) editorZoom = 5.0;
                 applyEditorZoom();
             }
 
             function applyEditorZoom() {
-                cropCanvas.style.transform = `scale(${editorZoom})`;
+                const container = document.getElementById('canvasContainer');
+                const wrapper = document.getElementById('editorWrapper');
+                
+                cropCanvas.style.transform = 'none';
+                let w = cropCanvas.width * editorZoom;
+                let h = cropCanvas.height * editorZoom;
+                
+                wrapper.style.width = w + 'px';
+                wrapper.style.height = h + 'px';
+                
+                if (w < container.clientWidth) {
+                    wrapper.style.marginLeft = (container.clientWidth - w) / 2 + 'px';
+                } else {
+                    wrapper.style.marginLeft = '0px';
+                }
+                
+                if (h < container.clientHeight) {
+                    wrapper.style.marginTop = (container.clientHeight - h) / 2 + 'px';
+                } else {
+                    wrapper.style.marginTop = '0px';
+                }
+
                 document.getElementById('zoomLabel').innerText = Math.round(editorZoom * 100) + '%';
             }
 
             // --- Drag & Drop Interactivity ---
             let dragStartPos = null;
             let dragStartPoints = null;
+            let isPanning = false;
+            let panStartX = 0;
+            let panStartY = 0;
+            let panScrollLeft = 0;
+            let panScrollTop = 0;
 
             function getMousePos(e) {
                 const rect = cropCanvas.getBoundingClientRect();
@@ -787,15 +915,15 @@
                     clientX = e.touches[0].clientX;
                     clientY = e.touches[0].clientY;
                 }
-                // Calculate position considering scale factor and zoom
                 return {
-                    x: (clientX - rect.left) / editorZoom,
-                    y: (clientY - rect.top) / editorZoom
+                    x: (clientX - rect.left) * (cropCanvas.width / rect.width),
+                    y: (clientY - rect.top) * (cropCanvas.height / rect.height)
                 };
             }
 
-            cropCanvas.addEventListener('mousedown', startDrag);
-            cropCanvas.addEventListener('touchstart', startDrag, { passive: false });
+            // Use workspace to catch edge touches that happen on the container padding
+            workspace.addEventListener('mousedown', startDrag);
+            workspace.addEventListener('touchstart', startDrag, { passive: false });
 
             workspace.addEventListener('mousemove', drag);
             workspace.addEventListener('touchmove', drag, { passive: false });
@@ -804,10 +932,31 @@
             window.addEventListener('touchend', endDrag);
 
             function startDrag(e) {
-                e.preventDefault();
+                // Ignore clicks on zoom controls
+                if (e.target.closest('button')) return;
+
                 const pos = getMousePos(e);
-                // Find the closest point within a 30px hit radius
-                let minDist = 30;
+
+                if (editorTool === 'draw') {
+                    // Only start drawing if clicking exactly on canvas or very close
+                    const rect = cropCanvas.getBoundingClientRect();
+                    const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+                    const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+                    
+                    if (clientX < rect.left - 20 || clientX > rect.right + 20 || clientY < rect.top - 20 || clientY > rect.bottom + 20) {
+                        return; // Start pan instead of draw
+                    }
+
+                    e.preventDefault();
+                    isDrawing = true;
+                    strokePath = [pos];
+                    drawEditor();
+                    return;
+                }
+
+                // Hit radius (60 screen pixels for easy touch on mobile)
+                let rectW = cropCanvas.getBoundingClientRect().width || 1;
+                let minDist = 60 * (cropCanvas.width / rectW);
                 draggingPointIndex = -1;
                 
                 // 1. Check 4 corners
@@ -819,13 +968,20 @@
                     }
                 });
 
-                // 2. Check 4 edge midpoints
+                // 2. Check 4 edges (line segments) to allow dragging edge from anywhere
                 if (draggingPointIndex === -1) {
                     const edges = [[0,1], [1,2], [2,3], [3,0]];
                     edges.forEach((edge, idx) => {
-                        const midX = (cropperPoints[edge[0]].x + cropperPoints[edge[1]].x) / 2;
-                        const midY = (cropperPoints[edge[0]].y + cropperPoints[edge[1]].y) / 2;
-                        const dist = Math.hypot(midX - pos.x, midY - pos.y);
+                        const p1 = cropperPoints[edge[0]];
+                        const p2 = cropperPoints[edge[1]];
+                        const l2 = Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2);
+                        if (l2 === 0) return;
+                        
+                        let t = Math.max(0, Math.min(1, ((pos.x - p1.x) * (p2.x - p1.x) + (pos.y - p1.y) * (p2.y - p1.y)) / l2));
+                        const projX = p1.x + t * (p2.x - p1.x);
+                        const projY = p1.y + t * (p2.y - p1.y);
+                        
+                        const dist = Math.hypot(projX - pos.x, projY - pos.y);
                         if (dist < minDist) {
                             minDist = dist;
                             draggingPointIndex = 4 + idx;
@@ -833,18 +989,56 @@
                     });
                 }
 
-                if (draggingPointIndex >= 4) {
-                    dragStartPos = pos;
-                    const edges = [[0,1], [1,2], [2,3], [3,0]];
-                    const edgeIdx = draggingPointIndex - 4;
-                    dragStartPoints = [
-                        {x: cropperPoints[edges[edgeIdx][0]].x, y: cropperPoints[edges[edgeIdx][0]].y},
-                        {x: cropperPoints[edges[edgeIdx][1]].x, y: cropperPoints[edges[edgeIdx][1]].y}
-                    ];
+                if (draggingPointIndex !== -1) {
+                    e.preventDefault();
+                    if (draggingPointIndex >= 4) {
+                        dragStartPos = pos;
+                        const edges = [[0,1], [1,2], [2,3], [3,0]];
+                        const edgeIdx = draggingPointIndex - 4;
+                        dragStartPoints = [
+                            {x: cropperPoints[edges[edgeIdx][0]].x, y: cropperPoints[edges[edgeIdx][0]].y},
+                            {x: cropperPoints[edges[edgeIdx][1]].x, y: cropperPoints[edges[edgeIdx][1]].y}
+                        ];
+                    }
+                } else {
+                    // Start panning
+                    isPanning = true;
+                    const container = document.getElementById('canvasContainer');
+                    panStartX = e.clientX || (e.touches && e.touches[0].clientX);
+                    panStartY = e.clientY || (e.touches && e.touches[0].clientY);
+                    panScrollLeft = container.scrollLeft;
+                    panScrollTop = container.scrollTop;
                 }
             }
 
             function drag(e) {
+                if (editorTool === 'draw') {
+                    if (!isDrawing) return;
+                    e.preventDefault();
+                    strokePath.push(getMousePos(e));
+                    if (!window.pendingDraw) {
+                        window.pendingDraw = true;
+                        requestAnimationFrame(() => {
+                            try {
+                                drawEditor();
+                            } finally {
+                                window.pendingDraw = false;
+                            }
+                        });
+                    }
+                    return;
+                }
+
+                if (isPanning) {
+                    e.preventDefault();
+                    const container = document.getElementById('canvasContainer');
+                    const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+                    const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+                    container.scrollLeft = panScrollLeft - (clientX - panStartX);
+                    container.scrollTop = panScrollTop - (clientY - panStartY);
+                    return;
+                }
+
                 if (draggingPointIndex === -1) {
                     magCanvas.style.display = 'none';
                     return;
@@ -887,52 +1081,104 @@
                     cropperPoints[p2Idx] = {x: newX2, y: newY2};
                 }
 
-                drawEditor();
+                const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+                const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+                const targetPos = {x: pos.x, y: pos.y};
 
-                // Magnifier Logic
-                magCanvas.style.display = 'block';
+                if (!window.pendingCropDraw) {
+                    window.pendingCropDraw = true;
+                    requestAnimationFrame(() => {
+                        try {
+                            drawEditor();
 
-                let clientX = e.clientX || (e.touches && e.touches[0].clientX);
-                let clientY = e.clientY || (e.touches && e.touches[0].clientY);
+                            // Magnifier Logic
+                            magCanvas.style.display = 'block';
 
-                // Position magnifier near cursor but offset
-                let magX = clientX - 90;
-                let magY = clientY - 220;
-                if (magY < 10) magY = clientY + 40; // Flip below if off-screen top
+                            let magX = clientX - 90;
+                            let magY = clientY - 220;
+                            if (magY < 10) magY = clientY + 40; // Flip below if off-screen top
 
-                magCanvas.style.left = magX + 'px';
-                magCanvas.style.top = magY + 'px';
+                            magCanvas.style.left = magX + 'px';
+                            magCanvas.style.top = magY + 'px';
 
-                if (draggingPointIndex < 4) {
-                    updateMagnifier(cropperPoints[draggingPointIndex].x, cropperPoints[draggingPointIndex].y);
-                } else {
-                    const edges = [[0,1], [1,2], [2,3], [3,0]];
-                    const edgeIdx = draggingPointIndex - 4;
-                    const midX = (cropperPoints[edges[edgeIdx][0]].x + cropperPoints[edges[edgeIdx][1]].x) / 2;
-                    const midY = (cropperPoints[edges[edgeIdx][0]].y + cropperPoints[edges[edgeIdx][1]].y) / 2;
-                    updateMagnifier(midX, midY);
+                            if (draggingPointIndex < 4) {
+                                updateMagnifier(cropperPoints[draggingPointIndex].x, cropperPoints[draggingPointIndex].y);
+                            } else {
+                                const edges = [[0,1], [1,2], [2,3], [3,0]];
+                                const edgeIdx = draggingPointIndex - 4;
+                                const midX = (cropperPoints[edges[edgeIdx][0]].x + cropperPoints[edges[edgeIdx][1]].x) / 2;
+                                const midY = (cropperPoints[edges[edgeIdx][0]].y + cropperPoints[edges[edgeIdx][1]].y) / 2;
+                                updateMagnifier(midX, midY);
+                            }
+                        } finally {
+                            window.pendingCropDraw = false;
+                        }
+                    });
                 }
             }
 
             function endDrag() {
+                isPanning = false;
+                if (editorTool === 'draw') {
+                    if (isDrawing) {
+                        commitStroke();
+                        isDrawing = false;
+                        drawEditor();
+                    }
+                    return;
+                }
                 draggingPointIndex = -1;
                 magCanvas.style.display = 'none';
             }
 
             function drawEditor() {
                 ctx.clearRect(0, 0, cropCanvas.width, cropCanvas.height);
-                ctx.drawImage(rawImageObj, 0, 0, cropCanvas.width, cropCanvas.height);
+
+                // Preview current stroke (on UI canvas while drawing)
+                if (isDrawing && strokePath.length > 0) {
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.moveTo(strokePath[0].x, strokePath[0].y);
+                    for (let i = 1; i < strokePath.length; i++) {
+                        ctx.lineTo(strokePath[i].x, strokePath[i].y);
+                    }
+                    ctx.lineCap = 'round';
+                    ctx.lineJoin = 'round';
+                    ctx.lineWidth = brushSize;
+
+                    if (brushMode === 'highlight') {
+                        ctx.strokeStyle = brushColor;
+                        ctx.globalAlpha = 0.4;
+                    } else if (brushMode === 'erase') {
+                        ctx.strokeStyle = '#ffffff';
+                        ctx.globalAlpha = 1.0;
+                    } else {
+                        ctx.strokeStyle = brushColor;
+                        ctx.globalAlpha = 1.0;
+                    }
+                    ctx.stroke();
+                    ctx.restore();
+                }
+
+                if (editorTool === 'draw') {
+                    return; // Don't draw crop guides while drawing
+                }
 
                 // Shade outside area
+                ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+                ctx.fillRect(0, 0, cropCanvas.width, cropCanvas.height);
+
+                ctx.save();
+                ctx.globalCompositeOperation = "destination-out";
                 ctx.beginPath();
-                ctx.rect(0, 0, cropCanvas.width, cropCanvas.height);
                 ctx.moveTo(cropperPoints[0].x, cropperPoints[0].y);
                 ctx.lineTo(cropperPoints[1].x, cropperPoints[1].y);
                 ctx.lineTo(cropperPoints[2].x, cropperPoints[2].y);
                 ctx.lineTo(cropperPoints[3].x, cropperPoints[3].y);
                 ctx.closePath();
-                ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
-                ctx.fill("evenodd");
+                ctx.fillStyle = "#ffffff";
+                ctx.fill();
+                ctx.restore();
 
                 // Draw cropping polygon
                 ctx.beginPath();
@@ -1008,10 +1254,10 @@
                 const r = 90; // magnifier radius
                 ctxMag.clearRect(0, 0, 180, 180);
 
-                // Zoom factor
-                const s = 2;
-                const sw = 180 / s;
-                const sh = 180 / s;
+                // Zoom factor relative to screen
+                const screenZoom = 2;
+                const sw = 180 / (screenZoom * editorZoom);
+                const sh = 180 / (screenZoom * editorZoom);
                 const sx = x - sw / 2;
                 const sy = y - sh / 2;
 
@@ -1021,6 +1267,13 @@
                 ctxMag.arc(r, r, r, 0, Math.PI * 2);
                 ctxMag.clip();
 
+                if (cachedBgCanvas) ctxMag.drawImage(cachedBgCanvas, sx, sy, sw, sh, 0, 0, 180, 180);
+                if (paintCanvas) ctxMag.drawImage(paintCanvas, sx, sy, sw, sh, 0, 0, 180, 180);
+                if (highlightCanvas) {
+                    ctxMag.globalAlpha = 0.4;
+                    ctxMag.drawImage(highlightCanvas, sx, sy, sw, sh, 0, 0, 180, 180);
+                    ctxMag.globalAlpha = 1.0;
+                }
                 ctxMag.drawImage(cropCanvas, sx, sy, sw, sh, 0, 0, 180, 180);
 
                 // Crosshair
@@ -1036,162 +1289,268 @@
             // --- Right Sidebar Filters ---
             function setFilter(type) {
                 currentFilter = type;
-                const defaultClasses = "flex-1 py-2.5 text-xs font-bold rounded-lg text-slate-400 hover:text-white transition-colors bg-transparent";
-                const magicActiveClasses = "flex-1 py-2.5 text-xs font-bold rounded-lg text-slate-900 bg-cyan-400 shadow-[0_0_10px_rgba(0,255,255,0.4)] transition-colors";
-                const bwActiveClasses = "flex-1 py-2.5 text-xs font-bold rounded-lg text-white bg-violet-600 shadow-[0_0_10px_rgba(139,92,246,0.5)] transition-colors";
-                const origActiveClasses = "flex-1 py-2.5 text-xs font-bold rounded-lg text-white bg-slate-600 shadow-sm transition-colors";
+                activeBaseFilter = '';
+                
+                document.querySelectorAll('.filter-btn').forEach(btn => {
+                    btn.className = "filter-btn shrink-0 px-4 py-2 text-xs font-bold rounded-lg transition-colors snap-center text-slate-400 hover:text-white bg-transparent";
+                });
+                
+                const btn = document.getElementById('filter_' + type);
+                if (btn) {
+                    btn.className = "filter-btn active shrink-0 px-4 py-2 text-xs font-bold rounded-lg transition-colors snap-center text-slate-900 bg-cyan-400 shadow-[0_0_10px_rgba(0,255,255,0.4)]";
+                }
 
-                document.getElementById('filterOrig').className = defaultClasses;
-                document.getElementById('filterMagic').className = defaultClasses;
-                document.getElementById('filterBW').className = defaultClasses;
+                let vals = { b: 0, c: 0, sat: 100, sh: 0, exp: 0 };
 
-                if (type === 'orig') {
-                    document.getElementById('filterOrig').className = origActiveClasses;
-                    document.getElementById('inpBright').value = 0;
-                    document.getElementById('inpContrast').value = 0;
-                    document.getElementById('inpSaturation').value = 100;
-                    document.getElementById('inpSharpness').value = 0;
-                }
-                if (type === 'magic') {
-                    document.getElementById('filterMagic').className = magicActiveClasses;
-                    document.getElementById('inpBright').value = 10;
-                    document.getElementById('inpContrast').value = 20;
-                    document.getElementById('inpSaturation').value = 120;
-                    document.getElementById('inpSharpness').value = 5;
-                }
-                if (type === 'bw') {
-                    document.getElementById('filterBW').className = bwActiveClasses;
-                    document.getElementById('inpBright').value = 15;
-                    document.getElementById('inpContrast').value = 30;
-                    document.getElementById('inpSaturation').value = 0;
-                    document.getElementById('inpSharpness').value = 10;
-                }
+                if (type === 'orig') vals = { b: 0, c: 0, sat: 100, sh: 0, exp: 0 };
+                else if (type === 'magic') vals = { b: 10, c: 20, sat: 120, sh: 5, exp: 5 };
+                else if (type === 'vivid_light') vals = { b: 10, c: 30, sat: 150, sh: 5, exp: 10 };
+                else if (type === 'contrast_bw' || type === 'bw') { vals = { b: 0, c: 50, sat: 0, sh: 10, exp: 5 }; activeBaseFilter = 'grayscale(100%)'; }
+                else if (type === 'vibrant') vals = { b: 0, c: 20, sat: 180, sh: 5, exp: 0 };
+                else if (type === 'soft_tone') vals = { b: 5, c: 0, sat: 80, sh: 0, exp: 10 };
+                else if (type === 'sharp_black') { vals = { b: -10, c: 40, sat: 0, sh: 15, exp: -5 }; activeBaseFilter = 'grayscale(100%)'; }
+                else if (type === 'ocv_color') vals = { b: 15, c: 25, sat: 140, sh: 8, exp: 5 };
+                else if (type === 'ocv_black') { vals = { b: 5, c: 35, sat: 0, sh: 12, exp: 0 }; activeBaseFilter = 'grayscale(100%)'; }
+                else if (type === 'carbon_black') { vals = { b: -20, c: 50, sat: 0, sh: 15, exp: -10 }; activeBaseFilter = 'grayscale(100%)'; }
+                else if (type === 'color_pop') vals = { b: 10, c: 40, sat: 160, sh: 5, exp: 0 };
+                else if (type === 'color_effect') { vals = { b: 5, c: 15, sat: 130, sh: 5, exp: 5 }; activeBaseFilter = 'sepia(40%) hue-rotate(-10deg)'; }
+
+                document.getElementById('inpBright').value = vals.b;
+                document.getElementById('inpContrast').value = vals.c;
+                document.getElementById('inpSaturation').value = vals.sat;
+                document.getElementById('inpSharpness').value = vals.sh;
+                document.getElementById('inpExposure').value = vals.exp;
 
                 updateFilters();
             }
 
             function updateFilters() {
-                let b = document.getElementById('inpBright').value;
-                let c = document.getElementById('inpContrast').value;
-                let sat = document.getElementById('inpSaturation').value;
-                let sh = document.getElementById('inpSharpness').value;
+                let b = parseInt(document.getElementById('inpBright').value);
+                let c = parseInt(document.getElementById('inpContrast').value);
+                let sat = parseInt(document.getElementById('inpSaturation').value);
+                let sh = parseInt(document.getElementById('inpSharpness').value);
+                let exp = parseInt(document.getElementById('inpExposure').value);
                 
                 document.getElementById('valBright').innerText = b;
                 document.getElementById('valContrast').innerText = c;
                 document.getElementById('valSaturation').innerText = sat;
                 document.getElementById('valSharpness').innerText = sh;
+                document.getElementById('valExposure').innerText = exp;
 
                 // Update SVG Sharpen filter
-                let s = parseInt(sh) / 10;
+                let s = sh / 10;
                 let center = 1 + 4 * s;
                 let edge = -s;
                 document.getElementById('sharpMatrix').setAttribute('kernelMatrix', `0 ${edge} 0 ${edge} ${center} ${edge} 0 ${edge} 0`);
 
-                // Apply CSS filters to the canvas element for live preview
-                let filterString = `brightness(${100 + parseInt(b)}%) contrast(${100 + parseInt(c)}%) saturate(${sat}%) url(#svgSharpen)`;
+                let totalBright = 100 + b + exp;
+                let filterString = `${activeBaseFilter} brightness(${totalBright}%) contrast(${100 + c}%) saturate(${sat}%) url(#svgSharpen)`;
 
-                cropCanvas.style.filter = filterString;
-                drawEditor(); // Redraw context
+                document.getElementById('editorWrapper').style.filter = filterString;
+            }
+
+            // --- Markup Tool Functions ---
+            function setEditorTool(tool) {
+                editorTool = tool;
+                document.getElementById('btnToolCrop').className = "tool-btn px-3 py-1.5 text-[10px] font-bold rounded transition-colors " + (tool === 'crop' ? "bg-cyan-400 text-slate-900 shadow-[0_0_10px_rgba(0,255,255,0.4)]" : "text-slate-400 hover:text-white");
+                document.getElementById('btnToolDraw').className = "tool-btn px-3 py-1.5 text-[10px] font-bold rounded transition-colors " + (tool === 'draw' ? "bg-cyan-400 text-slate-900 shadow-[0_0_10px_rgba(0,255,255,0.4)]" : "text-slate-400 hover:text-white");
+                
+                const drawControls = document.getElementById('drawControls');
+                if (tool === 'draw') {
+                    drawControls.classList.remove('hidden');
+                } else {
+                    drawControls.classList.add('hidden');
+                }
+                drawEditor();
+            }
+
+            function setBrushMode(mode) {
+                brushMode = mode;
+                const modes = ['Brush', 'Highlight', 'Erase'];
+                modes.forEach(m => {
+                    const btn = document.getElementById('btnBrush' + m);
+                    if (btn) {
+                        const isM = mode === m.toLowerCase();
+                        btn.className = "brush-btn flex-1 py-2 text-[10px] font-bold rounded-lg transition-colors " + (isM ? "bg-violet-600 text-white shadow-[0_0_10px_rgba(139,92,246,0.5)]" : "text-slate-400 hover:text-white");
+                    }
+                });
+            }
+
+            function updateBrushSettings() {
+                brushSize = parseInt(document.getElementById('inpBrushSize').value);
+                brushColor = document.getElementById('inpBrushColor').value;
+                document.getElementById('valBrushSize').innerText = brushSize;
+            }
+
+            function clearPaintCanvas() {
+                if (paintCtx && paintCanvas) paintCtx.clearRect(0, 0, paintCanvas.width, paintCanvas.height);
+                if (highlightCtx && highlightCanvas) highlightCtx.clearRect(0, 0, highlightCanvas.width, highlightCanvas.height);
+                drawEditor();
+            }
+
+            function commitStroke() {
+                if (strokePath.length === 0) return;
+                
+                const drawToCtx = (targetCtx, color, mode) => {
+                    targetCtx.save();
+                    targetCtx.beginPath();
+                    targetCtx.moveTo(strokePath[0].x, strokePath[0].y);
+                    for (let i = 1; i < strokePath.length; i++) {
+                        targetCtx.lineTo(strokePath[i].x, strokePath[i].y);
+                    }
+                    targetCtx.lineCap = 'round';
+                    targetCtx.lineJoin = 'round';
+                    targetCtx.lineWidth = brushSize;
+                    targetCtx.strokeStyle = color;
+                    targetCtx.globalCompositeOperation = mode;
+                    targetCtx.stroke();
+                    targetCtx.restore();
+                };
+
+                if (brushMode === 'highlight') {
+                    if (highlightCtx) drawToCtx(highlightCtx, brushColor, 'source-over');
+                } else if (brushMode === 'erase') {
+                    // Erase highlight layer
+                    if (highlightCtx) drawToCtx(highlightCtx, 'rgba(0,0,0,1)', 'destination-out');
+                    // Erase by painting white on paint layer (acts as whiteout for document)
+                    if (paintCtx) drawToCtx(paintCtx, '#ffffff', 'source-over');
+                } else {
+                    if (paintCtx) drawToCtx(paintCtx, brushColor, 'source-over');
+                }
+                strokePath = [];
             }
 
             // --- Perspective Transform & Rendering ---
             function confirmScan() {
-                if (!cvReady) return;
+                if (!cvReady) return alert('The high-quality processing engine is still loading in the background. Please wait a few seconds and try again!');
 
-                // Convert canvas coordinates back to original image scale
-                const srcCoords = cropperPoints.map(p => ({
-                    x: p.x / scaleFactor,
-                    y: p.y / scaleFactor
-                }));
+                document.getElementById('loaderScreen').classList.remove('hidden', 'opacity-0');
+                document.getElementById('loaderText').innerText = "PROCESSING HIGH-RES IMAGE...";
 
-                // Calculate crop aspect ratio
-                const cropW = Math.max(
-                    Math.hypot(srcCoords[1].x - srcCoords[0].x, srcCoords[1].y - srcCoords[0].y),
-                    Math.hypot(srcCoords[2].x - srcCoords[3].x, srcCoords[2].y - srcCoords[3].y)
-                );
-                const cropH = Math.max(
-                    Math.hypot(srcCoords[3].x - srcCoords[0].x, srcCoords[3].y - srcCoords[0].y),
-                    Math.hypot(srcCoords[2].x - srcCoords[1].x, srcCoords[2].y - srcCoords[1].y)
-                );
+                setTimeout(() => {
+                    try {
+                        // Canvas coordinates are natively in edit scale! Map back to original!
+                        const scaleBack = 1 / renderScale;
+                        const srcCoords = cropperPoints.map(p => ({
+                            x: p.x * scaleBack,
+                            y: p.y * scaleBack
+                        }));
 
-                let outW = TARGET_W;
-                let outH = TARGET_H;
+                        // Calculate crop aspect ratio
+                        const cropW = Math.max(
+                            Math.hypot(srcCoords[1].x - srcCoords[0].x, srcCoords[1].y - srcCoords[0].y),
+                            Math.hypot(srcCoords[2].x - srcCoords[3].x, srcCoords[2].y - srcCoords[3].y)
+                        );
+                        const cropH = Math.max(
+                            Math.hypot(srcCoords[3].x - srcCoords[0].x, srcCoords[3].y - srcCoords[0].y),
+                            Math.hypot(srcCoords[2].x - srcCoords[1].x, srcCoords[2].y - srcCoords[1].y)
+                        );
 
-                if (currentPrintMode !== 'idcard') {
-                    const maxOut = isUpscale ? 3000 : 1500;
-                    if (cropW > cropH) {
-                        outW = maxOut;
-                        outH = (cropH / cropW) * maxOut;
-                    } else {
-                        outH = maxOut;
-                        outW = (cropW / cropH) * maxOut;
+                        let outW = TARGET_W;
+                        let outH = TARGET_H;
+
+                        if (currentPrintMode !== 'idcard') {
+                            const maxOut = isUpscale ? 3000 : 1500;
+                            if (cropW > cropH) {
+                                outW = maxOut;
+                                outH = (cropH / cropW) * maxOut;
+                            } else {
+                                outH = maxOut;
+                                outW = (cropW / cropH) * maxOut;
+                            }
+                        } else if (isUpscale) {
+                            outW *= 2;
+                            outH *= 2;
+                        }
+
+                        // Merge paintCanvas with rawImageObj at original resolution
+                        const mergeCanvas = document.createElement('canvas');
+                        mergeCanvas.width = rawImageObj.width;
+                        mergeCanvas.height = rawImageObj.height;
+                        const mCtx = mergeCanvas.getContext('2d');
+                        mCtx.drawImage(rawImageObj, 0, 0);
+                        if (paintCanvas) {
+                            mCtx.drawImage(paintCanvas, 0, 0, paintCanvas.width, paintCanvas.height, 0, 0, mergeCanvas.width, mergeCanvas.height);
+                        }
+                        if (highlightCanvas) {
+                            mCtx.save();
+                            mCtx.globalAlpha = 0.4;
+                            mCtx.globalCompositeOperation = 'multiply';
+                            mCtx.drawImage(highlightCanvas, 0, 0, highlightCanvas.width, highlightCanvas.height, 0, 0, mergeCanvas.width, mergeCanvas.height);
+                            mCtx.restore();
+                        }
+
+                        // Perform OpenCV Transform
+                        const src = cv.imread(mergeCanvas);
+                        const dst = new cv.Mat();
+
+                        let srcTri = cv.matFromArray(4, 1, cv.CV_32FC2, [
+                            srcCoords[0].x, srcCoords[0].y,
+                            srcCoords[1].x, srcCoords[1].y,
+                            srcCoords[2].x, srcCoords[2].y,
+                            srcCoords[3].x, srcCoords[3].y
+                        ]);
+
+                        let dstTri = cv.matFromArray(4, 1, cv.CV_32FC2, [
+                            0, 0,
+                            outW, 0,
+                            outW, outH,
+                            0, outH
+                        ]);
+
+                        let M = cv.getPerspectiveTransform(srcTri, dstTri);
+                        let dsize = new cv.Size(outW, outH);
+                        cv.warpPerspective(src, dst, M, dsize, cv.INTER_LINEAR, cv.BORDER_CONSTANT, new cv.Scalar());
+
+                        src.delete(); srcTri.delete(); dstTri.delete(); M.delete();
+
+                        // Render warped image to a temporary canvas to apply visual filters permanently
+                        const tempCanvas = document.createElement('canvas');
+                        tempCanvas.width = outW;
+                        tempCanvas.height = outH;
+                        cv.imshow(tempCanvas, dst);
+                        dst.delete();
+
+                        const finalCanvas = document.createElement('canvas');
+                        finalCanvas.width = outW;
+                        finalCanvas.height = outH;
+                        const fCtx = finalCanvas.getContext('2d');
+
+                        let b = parseInt(document.getElementById('inpBright').value);
+                        let c = parseInt(document.getElementById('inpContrast').value);
+                        let sat = parseInt(document.getElementById('inpSaturation').value);
+                        let exp = parseInt(document.getElementById('inpExposure').value);
+                        
+                        let totalBright = 100 + b + exp;
+                        let filterString = `${activeBaseFilter} brightness(${totalBright}%) contrast(${100 + c}%) saturate(${sat}%) url(#svgSharpen)`;
+
+                        fCtx.filter = filterString;
+                        fCtx.drawImage(tempCanvas, 0, 0);
+
+                        const dataUrl = finalCanvas.toDataURL('image/jpeg', 1.0);
+
+                        // Initial sizes and coords
+                        let x = 10, y = 10, defW = 85.6, defH = 54;
+                        if (currentPrintMode !== 'idcard') {
+                            const aspect = outW / outH;
+                            defW = currentPrintMode === 'a4' ? 180 : 100;
+                            defH = defW / aspect;
+                            x = (210 - defW) / 2;
+                            y = (297 - defH) / 2;
+                        }
+
+                        // Add to processing queue
+                        addToQueue(currentSide, dataUrl, x, y, defW, defH);
+
+                        closeEditor();
+                    } catch (e) {
+                        console.error(e);
+                        alert("An error occurred during processing.");
+                    } finally {
+                        document.getElementById('loaderScreen').classList.add('hidden');
+                        document.getElementById('loaderText').innerText = "LOADING ENGINE...";
                     }
-                } else if (isUpscale) {
-                    outW *= 2;
-                    outH *= 2;
-                }
-
-                // Perform OpenCV Transform
-                const src = cv.imread(rawImageObj);
-                const dst = new cv.Mat();
-
-                let srcTri = cv.matFromArray(4, 1, cv.CV_32FC2, [
-                    srcCoords[0].x, srcCoords[0].y,
-                    srcCoords[1].x, srcCoords[1].y,
-                    srcCoords[2].x, srcCoords[2].y,
-                    srcCoords[3].x, srcCoords[3].y
-                ]);
-
-                let dstTri = cv.matFromArray(4, 1, cv.CV_32FC2, [
-                    0, 0,
-                    outW, 0,
-                    outW, outH,
-                    0, outH
-                ]);
-
-                let M = cv.getPerspectiveTransform(srcTri, dstTri);
-                let dsize = new cv.Size(outW, outH);
-                cv.warpPerspective(src, dst, M, dsize, cv.INTER_LINEAR, cv.BORDER_CONSTANT, new cv.Scalar());
-
-                src.delete(); srcTri.delete(); dstTri.delete(); M.delete();
-
-                // Render warped image to a temporary canvas to apply visual filters permanently
-                const tempCanvas = document.createElement('canvas');
-                tempCanvas.width = outW;
-                tempCanvas.height = outH;
-                cv.imshow(tempCanvas, dst);
-                dst.delete();
-
-                const finalCanvas = document.createElement('canvas');
-                finalCanvas.width = outW;
-                finalCanvas.height = outH;
-                const fCtx = finalCanvas.getContext('2d');
-
-                let b = document.getElementById('inpBright').value;
-                let c = document.getElementById('inpContrast').value;
-                let sat = document.getElementById('inpSaturation').value;
-                let sh = document.getElementById('inpSharpness').value;
-                let filterString = `brightness(${100 + parseInt(b)}%) contrast(${100 + parseInt(c)}%) saturate(${sat}%) url(#svgSharpen)`;
-
-                fCtx.filter = filterString;
-                fCtx.drawImage(tempCanvas, 0, 0);
-
-                const dataUrl = finalCanvas.toDataURL('image/jpeg', 1.0);
-
-                // Initial sizes and coords
-                let x = 10, y = 10, defW = 85.6, defH = 54;
-                if (currentPrintMode !== 'idcard') {
-                    const aspect = outW / outH;
-                    defW = currentPrintMode === 'a4' ? 180 : 100;
-                    defH = defW / aspect;
-                    x = (210 - defW) / 2;
-                    y = (297 - defH) / 2;
-                }
-
-                // Add to processing queue
-                addToQueue(currentSide, dataUrl, x, y, defW, defH);
-
-                closeEditor();
+                }, 50);
             }
 
             // --- Queue & A4 Layout Management ---
@@ -1621,6 +1980,15 @@
             document.addEventListener('DOMContentLoaded', resizeA4);
             // Initial execution with slight delay to ensure layout is ready
             setTimeout(resizeA4, 100);
+
+            // Horizontal scrolling for filters
+            const filterContainer = document.getElementById('filterContainer');
+            if (filterContainer) {
+                filterContainer.addEventListener('wheel', (e) => {
+                    e.preventDefault();
+                    filterContainer.scrollLeft += e.deltaY;
+                });
+            }
 
             // Mobile Menu Toggle
             window.toggleMobileMenu = function(event) {
