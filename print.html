@@ -64,6 +64,16 @@
             color: #8b5cf6;
         }
 
+        .qitem.is-selected {
+            border-color: #00ffff !important;
+        }
+        .qitem.is-selected .item-controls {
+            display: flex !important;
+        }
+        .qitem.is-selected .item-handle {
+            display: block !important;
+        }
+
         /* Navbar */
         nav {
             background: rgba(15, 23, 42, 0.8);
@@ -333,6 +343,9 @@
                                 Side</span>
                         </div>
                     </div>
+                    <button onclick="document.getElementById('uploadDirect').click()" class="mt-3 w-full py-2 bg-slate-800/50 border border-slate-600 rounded-lg text-xs font-bold text-slate-300 hover:border-cyan-400 hover:text-cyan-400 transition-colors flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-bolt"></i> Direct Add (No Crop)
+                    </button>
                 </div>
 
                 <!-- 3. Queue -->
@@ -551,6 +564,7 @@
 
         <input type="file" id="uploadFront" accept="image/*" class="hidden" onchange="handleUpload(event, 'front')">
         <input type="file" id="uploadBack" accept="image/*" class="hidden" onchange="handleUpload(event, 'back')">
+        <input type="file" id="uploadDirect" accept="image/*" multiple class="hidden" onchange="handleDirectUpload(event)">
 
         <!-- OpenCV async load -->
         <script async src="https://docs.opencv.org/4.8.0/opencv.js" onload="onOpenCvReady()"
@@ -1614,6 +1628,21 @@
 
             let activeItemDrag = null;
             let activeItemResize = null;
+            let selectedItemId = null;
+
+            function selectItem(id) {
+                selectedItemId = id;
+                document.querySelectorAll('.qitem').forEach(el => el.classList.remove('is-selected'));
+                const el = document.getElementById(`qitem_${id}`);
+                if (el) el.classList.add('is-selected');
+            }
+
+            document.addEventListener('pointerdown', (e) => {
+                if (e.target.closest('.qitem')) return;
+                if (e.target.closest('button')) return; 
+                selectedItemId = null;
+                document.querySelectorAll('.qitem').forEach(el => el.classList.remove('is-selected'));
+            });
 
             function renderA4() {
                 const container = document.getElementById('pagesContainer');
@@ -1641,30 +1670,30 @@
                         pageItems.forEach(item => {
                             if (currentPrintMode === 'large') {
                                 itemsHtml += `
-                        <div id="qitem_${item.id}" style="position:absolute; left:${item.x}mm; top:${item.y}mm; width:${item.w}mm; height:${item.h}mm;" class="group hover:border-cyan-400 touch-none shadow-sm border border-dashed border-transparent pointer-events-auto ${isActive ? '' : 'pointer-events-none'}">
+                        <div id="qitem_${item.id}" style="position:absolute; left:${item.x}mm; top:${item.y}mm; width:${item.w}mm; height:${item.h}mm;" class="qitem group hover:border-cyan-400 touch-none shadow-sm border border-dashed border-transparent pointer-events-auto ${isActive ? '' : 'pointer-events-none'} ${selectedItemId === item.id ? 'is-selected' : ''}">
                             <img src="${item.src}" class="w-full h-full block" draggable="false" style="cursor:move;" onpointerdown="startItemDrag(event, ${item.id}, ${pIndex})">
                             
                             <!-- Toolbar -->
-                            <div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-800 border border-slate-600 rounded shadow-lg hidden group-hover:flex items-center gap-3 px-3 py-1.5 z-20">
+                            <div class="item-controls absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-800 border border-slate-600 rounded shadow-lg hidden group-hover:flex items-center gap-3 px-3 py-1.5 z-20">
                                 <button title="Rotate 90° (Portrait/Landscape)" onpointerdown="(function(e){ e.preventDefault(); e.stopPropagation(); rotateItem(${item.id}, ${pIndex}); })(event)" class="text-slate-300 hover:text-cyan-400 text-xs font-bold flex items-center gap-1 transition-colors"><i class="fa-solid fa-rotate-right"></i> Rotate</button>
                             </div>
 
                             <!-- 8 Resize Handles -->
-                            <div class="absolute -top-1.5 -left-1.5 w-3 h-3 bg-white border border-slate-800 cursor-nw-resize hidden group-hover:block touch-none shadow-[0_0_5px_rgba(0,0,0,0.5)] z-10" onpointerdown="startItemResize(event, ${item.id}, ${pIndex}, 'nw')"></div>
-                            <div class="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white border border-slate-800 cursor-n-resize hidden group-hover:block touch-none shadow-[0_0_5px_rgba(0,0,0,0.5)] z-10" onpointerdown="startItemResize(event, ${item.id}, ${pIndex}, 'n')"></div>
-                            <div class="absolute -top-1.5 -right-1.5 w-3 h-3 bg-white border border-slate-800 cursor-ne-resize hidden group-hover:block touch-none shadow-[0_0_5px_rgba(0,0,0,0.5)] z-10" onpointerdown="startItemResize(event, ${item.id}, ${pIndex}, 'ne')"></div>
-                            <div class="absolute top-1/2 -translate-y-1/2 -left-1.5 w-3 h-3 bg-white border border-slate-800 cursor-w-resize hidden group-hover:block touch-none shadow-[0_0_5px_rgba(0,0,0,0.5)] z-10" onpointerdown="startItemResize(event, ${item.id}, ${pIndex}, 'w')"></div>
-                            <div class="absolute top-1/2 -translate-y-1/2 -right-1.5 w-3 h-3 bg-white border border-slate-800 cursor-e-resize hidden group-hover:block touch-none shadow-[0_0_5px_rgba(0,0,0,0.5)] z-10" onpointerdown="startItemResize(event, ${item.id}, ${pIndex}, 'e')"></div>
-                            <div class="absolute -bottom-1.5 -left-1.5 w-3 h-3 bg-white border border-slate-800 cursor-sw-resize hidden group-hover:block touch-none shadow-[0_0_5px_rgba(0,0,0,0.5)] z-10" onpointerdown="startItemResize(event, ${item.id}, ${pIndex}, 'sw')"></div>
-                            <div class="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white border border-slate-800 cursor-s-resize hidden group-hover:block touch-none shadow-[0_0_5px_rgba(0,0,0,0.5)] z-10" onpointerdown="startItemResize(event, ${item.id}, ${pIndex}, 's')"></div>
-                            <div class="absolute -bottom-1.5 -right-1.5 w-3 h-3 bg-cyan-400 rounded-full border border-slate-800 cursor-se-resize hidden group-hover:block touch-none shadow-[0_0_10px_rgba(0,255,255,0.8)] z-10" onpointerdown="startItemResize(event, ${item.id}, ${pIndex}, 'se')"></div>
+                            <div class="item-handle absolute -top-1.5 -left-1.5 w-3 h-3 bg-white border border-slate-800 cursor-nw-resize hidden group-hover:block touch-none shadow-[0_0_5px_rgba(0,0,0,0.5)] z-10" onpointerdown="startItemResize(event, ${item.id}, ${pIndex}, 'nw')"></div>
+                            <div class="item-handle absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white border border-slate-800 cursor-n-resize hidden group-hover:block touch-none shadow-[0_0_5px_rgba(0,0,0,0.5)] z-10" onpointerdown="startItemResize(event, ${item.id}, ${pIndex}, 'n')"></div>
+                            <div class="item-handle absolute -top-1.5 -right-1.5 w-3 h-3 bg-white border border-slate-800 cursor-ne-resize hidden group-hover:block touch-none shadow-[0_0_5px_rgba(0,0,0,0.5)] z-10" onpointerdown="startItemResize(event, ${item.id}, ${pIndex}, 'ne')"></div>
+                            <div class="item-handle absolute top-1/2 -translate-y-1/2 -left-1.5 w-3 h-3 bg-white border border-slate-800 cursor-w-resize hidden group-hover:block touch-none shadow-[0_0_5px_rgba(0,0,0,0.5)] z-10" onpointerdown="startItemResize(event, ${item.id}, ${pIndex}, 'w')"></div>
+                            <div class="item-handle absolute top-1/2 -translate-y-1/2 -right-1.5 w-3 h-3 bg-white border border-slate-800 cursor-e-resize hidden group-hover:block touch-none shadow-[0_0_5px_rgba(0,0,0,0.5)] z-10" onpointerdown="startItemResize(event, ${item.id}, ${pIndex}, 'e')"></div>
+                            <div class="item-handle absolute -bottom-1.5 -left-1.5 w-3 h-3 bg-white border border-slate-800 cursor-sw-resize hidden group-hover:block touch-none shadow-[0_0_5px_rgba(0,0,0,0.5)] z-10" onpointerdown="startItemResize(event, ${item.id}, ${pIndex}, 'sw')"></div>
+                            <div class="item-handle absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white border border-slate-800 cursor-s-resize hidden group-hover:block touch-none shadow-[0_0_5px_rgba(0,0,0,0.5)] z-10" onpointerdown="startItemResize(event, ${item.id}, ${pIndex}, 's')"></div>
+                            <div class="item-handle absolute -bottom-1.5 -right-1.5 w-3 h-3 bg-cyan-400 rounded-full border border-slate-800 cursor-se-resize hidden group-hover:block touch-none shadow-[0_0_10px_rgba(0,255,255,0.8)] z-10" onpointerdown="startItemResize(event, ${item.id}, ${pIndex}, 'se')"></div>
                         </div>
                     `;
                             } else if (currentPrintMode === 'a4') {
                                 itemsHtml += `
-                        <div id="qitem_${item.id}" style="position:absolute; left:${item.x}mm; top:${item.y}mm; width:${item.w}mm; height:${item.h}mm;" class="group hover:border-cyan-400 touch-none shadow-sm border border-dashed border-transparent pointer-events-auto ${isActive ? '' : 'pointer-events-none'}">
+                        <div id="qitem_${item.id}" style="position:absolute; left:${item.x}mm; top:${item.y}mm; width:${item.w}mm; height:${item.h}mm;" class="qitem group hover:border-cyan-400 touch-none shadow-sm border border-dashed border-transparent pointer-events-auto ${isActive ? '' : 'pointer-events-none'} ${selectedItemId === item.id ? 'is-selected' : ''}">
                             <img src="${item.src}" class="w-full h-full block" draggable="false" style="cursor:move;" onpointerdown="startItemDrag(event, ${item.id}, ${pIndex})">
-                            <div class="absolute -bottom-1.5 -right-1.5 w-4 h-4 bg-cyan-400 rounded-full cursor-se-resize hidden group-hover:block touch-none shadow-[0_0_10px_rgba(0,255,255,0.8)] z-10" onpointerdown="startItemResize(event, ${item.id}, ${pIndex})"></div>
+                            <div class="item-handle absolute -bottom-1.5 -right-1.5 w-4 h-4 bg-cyan-400 rounded-full cursor-se-resize hidden group-hover:block touch-none shadow-[0_0_10px_rgba(0,255,255,0.8)] z-10" onpointerdown="startItemResize(event, ${item.id}, ${pIndex})"></div>
                         </div>
                     `;
                             }
@@ -1709,6 +1738,7 @@
 
             function startItemDrag(e, id, pIndex) {
                 if (pIndex !== activePageIndex) return;
+                selectItem(id);
                 e.preventDefault();
                 const item = pages[pIndex].find(i => i.id === id);
                 activeItemDrag = { item, startX: e.clientX, startY: e.clientY, initX: item.x, initY: item.y };
@@ -1716,12 +1746,14 @@
 
             function startItemResize(e, id, pIndex, direction) {
                 if (pIndex !== activePageIndex) return;
+                selectItem(id);
                 e.preventDefault(); e.stopPropagation();
                 const item = pages[pIndex].find(i => i.id === id);
                 activeItemResize = { item, startX: e.clientX, startY: e.clientY, initX: item.x, initY: item.y, initW: item.w, initH: item.h, direction, aspect: item.w / item.h };
             }
 
             function rotateItem(id, pIndex) {
+                selectItem(id);
                 const item = pages[pIndex].find(i => i.id === id);
                 if (!item) return;
 
@@ -1980,6 +2012,72 @@
             document.addEventListener('DOMContentLoaded', resizeA4);
             // Initial execution with slight delay to ensure layout is ready
             setTimeout(resizeA4, 100);
+
+            // --- Direct Drag & Drop / Upload ---
+            function handleDirectUpload(event) {
+                const files = event.target.files;
+                if (!files || files.length === 0) return;
+                processDirectFiles(files);
+                event.target.value = '';
+            }
+
+            function processDirectFiles(files) {
+                Array.from(files).forEach(file => {
+                    if (file.type.startsWith('image/')) {
+                        const url = URL.createObjectURL(file);
+                        const img = new Image();
+                        img.onload = () => {
+                            let defW = 85.6, defH = 54;
+                            let x = 10, y = 10;
+                            if (currentPrintMode !== 'idcard') {
+                                const aspect = img.width / img.height;
+                                defW = currentPrintMode === 'a4' ? 180 : 100;
+                                defH = defW / aspect;
+                                x = (210 - defW) / 2;
+                                y = (297 - defH) / 2;
+                            }
+                            const canvas = document.createElement('canvas');
+                            canvas.width = img.width;
+                            canvas.height = img.height;
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(img, 0, 0);
+                            const dataUrl = canvas.toDataURL('image/png');
+                            addToQueue('front', dataUrl, x, y, defW, defH);
+                        };
+                        img.src = url;
+                    }
+                });
+            }
+
+            document.addEventListener('paste', (e) => {
+                if (e.clipboardData && e.clipboardData.files && e.clipboardData.files.length > 0) {
+                    processDirectFiles(e.clipboardData.files);
+                }
+            });
+
+            const mainArea = document.getElementById('mainArea');
+            
+            mainArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                mainArea.classList.add('ring-4', 'ring-cyan-500', 'bg-slate-800/50');
+            });
+
+            mainArea.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                mainArea.classList.remove('ring-4', 'ring-cyan-500', 'bg-slate-800/50');
+            });
+
+            mainArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                mainArea.classList.remove('ring-4', 'ring-cyan-500', 'bg-slate-800/50');
+
+                if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                    processDirectFiles(e.dataTransfer.files);
+                }
+            });
 
             // Horizontal scrolling for filters
             const filterContainer = document.getElementById('filterContainer');
