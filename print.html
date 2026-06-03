@@ -76,12 +76,18 @@
 
         /* Navbar */
         nav {
-            background: rgba(15, 23, 42, 0.8);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid #1e293b;
-            position: sticky;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            position: fixed;
+            width: 100%;
             top: 0;
-            z-index: 50;
+            z-index: 90;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+        body {
+            padding-top: 76px; /* offset for fixed navbar */
         }
 
         .nav-link {
@@ -249,6 +255,7 @@
                 <a href="services.html" class="nav-link" data-tab="services">Services</a>
                 <a href="updates.html" class="nav-link" data-tab="sarkari">Updates</a>
                 <a href="print.html" class="nav-link active" data-tab="print">Print Tools</a>
+
                 <a href="contact.html" class="nav-link" data-tab="contact">Contact</a>
                 <a href="booking.html" class="px-5 py-2 bg-violet-600 text-white font-bold rounded-lg hover:bg-violet-500 transition shadow-[0_0_10px_rgba(139,92,246,0.4)]">Book Now</a>
             </div>
@@ -268,6 +275,7 @@
                 <a href="services.html" class="nav-link" data-tab="services">Services</a>
                 <a href="updates.html" class="nav-link" data-tab="sarkari">Updates</a>
                 <a href="print.html" class="nav-link active" data-tab="print">Print Tools</a>
+                
                 <a href="contact.html" class="nav-link" data-tab="contact">Contact</a>
                 <a href="booking.html" class="text-violet-400">Book Now</a>
             </div>
@@ -285,11 +293,16 @@
                 <div>
                     <label class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2">1. Select
                         Type</label>
-                    <div class="grid grid-cols-3 gap-2 text-slate-300">
+                    <div class="grid grid-cols-2 gap-2 text-slate-300">
                         <button id="btnModeIdcard" onclick="setPrintMode('idcard')"
                             class="doc-btn active flex flex-col items-center justify-center p-2 rounded-lg group">
                             <i class="fa-solid fa-id-card text-xl mb-1"></i><span class="text-[10px] font-bold">ID
                                 Card</span>
+                        </button>
+                        <button id="btnMode4x6" onclick="setPrintMode('4x6')"
+                            class="doc-btn flex flex-col items-center justify-center p-2 rounded-lg group">
+                            <i class="fa-solid fa-camera-retro text-xl mb-1"></i><span class="text-[10px] font-bold">4x6
+                                Passport</span>
                         </button>
                         <button id="btnModeLarge" onclick="setPrintMode('large')"
                             class="doc-btn flex flex-col items-center justify-center p-2 rounded-lg group">
@@ -307,6 +320,16 @@
                         <input type="checkbox" id="singleSideMode" class="accent-cyan-400 w-4 h-4">
                         <span class="text-xs font-bold text-slate-300">Single Side Mode</span>
                     </label>
+
+                    <!-- Big Box for 11-in-1 Passport Uploader -->
+                    <div onclick="document.getElementById('uploadMultiplePassport').click()"
+                        class="mt-3 p-3 rounded-lg border-2 border-dashed border-cyan-500/30 bg-cyan-950/10 hover:bg-cyan-950/20 hover:border-cyan-400 transition-all cursor-pointer flex flex-col items-center justify-center gap-1.5 group text-center shadow-[0_0_10px_rgba(0,255,255,0.05)] hover:shadow-[0_0_15px_rgba(0,255,255,0.15)]">
+                        <i class="fa-solid fa-users text-lg text-cyan-400 group-hover:scale-110 transition-transform duration-300"></i>
+                        <div>
+                            <span class="text-[11px] font-bold text-slate-200 block tracking-wide uppercase">11-in-1 Passport Mode</span>
+                            <span class="text-[9px] text-slate-400 block mt-0.5 leading-snug">Upload photos of 1 to 11 different people to auto-fill a 4x6 sheet with original colors.</span>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- 2. Scan Documents -->
@@ -444,26 +467,39 @@
                         <canvas id="cropCanvas" class="absolute top-0 left-0 w-full h-full shadow-[0_0_40px_rgba(0,0,0,0.8)] touch-none"></canvas>
                     </div>
                 </div>
+
+                <!-- Horizontal Thumbnail Paging System at the bottom of Workspace -->
+                <div id="editorPagerContainer" class="w-full bg-slate-950/80 border-t border-slate-800 p-3 shrink-0 z-40">
+                    <div class="flex items-center gap-3">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest shrink-0">Adjust Photo:</span>
+                        <div id="editorThumbScroll" class="flex gap-2 overflow-x-auto hide-scrollbar scroll-smooth flex-1 py-1">
+                            <!-- Thumbnails rendered dynamically here -->
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Right Sidebar Adjustments -->
             <div
                 class="w-full md:w-80 h-[50vh] md:h-full bg-slate-900/80 backdrop-blur-md flex-col shrink-0 border-t md:border-t-0 md:border-l border-slate-800 shadow-2xl z-50 flex">
-                <div class="h-16 flex items-center justify-between px-6 border-b border-slate-800">
-                    <span class="text-slate-200 font-bold text-sm">ADJUST</span>
-                    <div class="flex gap-2">
-                        <button onclick="autoCrop()"
-                            class="px-2 py-1 bg-slate-800 text-[10px] text-slate-300 rounded border border-slate-700 hover:border-cyan-400 font-bold transition-colors">Auto Crop</button>
-                        <button onclick="fullCrop()"
-                            class="px-2 py-1 bg-slate-800 text-[10px] text-slate-300 rounded border border-slate-700 hover:border-cyan-400 font-bold transition-colors">Full Image</button>
-                        <button id="btnUpscale" onclick="toggleUpscale()"
-                            class="px-2 py-1 bg-slate-800 text-[10px] text-slate-300 rounded border border-slate-700 hover:border-cyan-400 font-bold transition-colors">HD</button>
-                        <button onclick="rotateCrop()"
-                            class="px-2 py-1 bg-slate-800 text-[10px] text-slate-300 rounded border border-slate-700 hover:border-cyan-400 font-bold transition-colors"
-                            title="Rotate"><i class="fa-solid fa-rotate-right"></i></button>
+                <div class="p-6 border-b border-slate-800 bg-slate-950/50">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-sliders text-cyan-400"></i>
+                            <span class="text-white font-bold text-sm tracking-wide">IMAGE ADJUSTMENTS</span>
+                        </div>
+                        <button onclick="closeEditor()" class="w-8 h-8 rounded-full bg-slate-800 text-slate-400 hover:text-red-400 hover:bg-slate-700 flex items-center justify-center transition-all"><i class="fa-solid fa-xmark"></i></button>
                     </div>
-                    <button onclick="closeEditor()"
-                        class="text-slate-400 hover:text-red-400 text-xs font-bold active:scale-95 transition-transform">CANCEL</button>
+                    
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="autoCrop()" class="flex-1 px-3 py-2 bg-slate-800 text-[11px] text-slate-300 rounded-lg border border-slate-700 hover:border-cyan-400 hover:text-cyan-400 font-semibold transition-colors flex justify-center items-center gap-1.5"><i class="fa-solid fa-crop-simple"></i> Auto</button>
+                        <button onclick="passportCrop()" class="flex-1 px-3 py-2 bg-slate-800 text-[11px] text-slate-300 rounded-lg border border-slate-700 hover:border-cyan-400 hover:text-cyan-400 font-semibold transition-colors flex justify-center items-center gap-1.5"><i class="fa-solid fa-id-badge"></i> Passport</button>
+                        <button onclick="fullCrop()" class="flex-1 px-3 py-2 bg-slate-800 text-[11px] text-slate-300 rounded-lg border border-slate-700 hover:border-cyan-400 hover:text-cyan-400 font-semibold transition-colors flex justify-center items-center gap-1.5"><i class="fa-solid fa-expand"></i> Full</button>
+                    </div>
+                    <div class="flex gap-2 mt-2">
+                        <button id="btnUpscale" onclick="toggleUpscale()" class="flex-1 px-3 py-2 bg-slate-800 text-[11px] text-slate-300 rounded-lg border border-slate-700 hover:border-violet-400 hover:text-violet-400 font-semibold transition-colors flex justify-center items-center gap-1.5"><i class="fa-solid fa-wand-magic-sparkles"></i> HD Upscale</button>
+                        <button onclick="rotateCrop()" class="flex-1 px-3 py-2 bg-slate-800 text-[11px] text-slate-300 rounded-lg border border-slate-700 hover:border-cyan-400 hover:text-cyan-400 font-semibold transition-colors flex justify-center items-center gap-1.5"><i class="fa-solid fa-rotate-right"></i> Rotate</button>
+                    </div>
                 </div>
 
                 <div class="flex-1 overflow-y-auto p-6 space-y-6">
@@ -480,6 +516,11 @@
                         <button onclick="setFilter('carbon_black')" id="filter_carbon_black" class="filter-btn shrink-0 px-4 py-2 text-xs font-bold rounded-lg transition-colors snap-center">Carbon Black</button>
                         <button onclick="setFilter('color_pop')" id="filter_color_pop" class="filter-btn shrink-0 px-4 py-2 text-xs font-bold rounded-lg transition-colors snap-center">Color Pop</button>
                         <button onclick="setFilter('color_effect')" id="filter_color_effect" class="filter-btn shrink-0 px-4 py-2 text-xs font-bold rounded-lg transition-colors snap-center">Effect</button>
+                        
+                        <!-- Skin Tone Filters for Better Print -->
+                        <button onclick="setFilter('skin_warm')" id="filter_skin_warm" class="filter-btn shrink-0 px-4 py-2 text-xs font-bold rounded-lg transition-colors snap-center text-slate-400 hover:text-white bg-transparent">Warm Skin</button>
+                        <button onclick="setFilter('skin_cool')" id="filter_skin_cool" class="filter-btn shrink-0 px-4 py-2 text-xs font-bold rounded-lg transition-colors snap-center text-slate-400 hover:text-white bg-transparent">Cool Skin</button>
+                        <button onclick="setFilter('skin_bright')" id="filter_skin_bright" class="filter-btn shrink-0 px-4 py-2 text-xs font-bold rounded-lg transition-colors snap-center text-slate-400 hover:text-white bg-transparent">Bright Skin</button>
                     </div>
 
                     <div class="space-y-5">
@@ -565,6 +606,29 @@
         <input type="file" id="uploadFront" accept="image/*" class="hidden" onchange="handleUpload(event, 'front')">
         <input type="file" id="uploadBack" accept="image/*" class="hidden" onchange="handleUpload(event, 'back')">
         <input type="file" id="uploadDirect" accept="image/*" multiple class="hidden" onchange="handleDirectUpload(event)">
+        <input type="file" id="uploadMultiplePassport" accept="image/*" multiple class="hidden" onchange="handleMultiplePassportUpload(event)">
+
+        <!-- Custom Prompt Modal -->
+        <div id="copiesModal" class="fixed inset-0 z-[200] hidden bg-[#020617]/90 backdrop-blur-sm flex items-center justify-center transition-opacity opacity-0">
+            <div class="bg-slate-900 border border-cyan-500/30 rounded-2xl shadow-[0_0_40px_rgba(0,255,255,0.15)] p-6 w-[90%] max-w-sm transform scale-95 transition-transform duration-300" id="copiesModalContent">
+                <div class="text-center mb-6">
+                    <div class="w-12 h-12 rounded-full bg-cyan-500/10 flex items-center justify-center mx-auto mb-3">
+                        <i class="fa-solid fa-copy text-cyan-400 text-xl"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-white tracking-wide">Passport Copies</h3>
+                    <p class="text-xs text-slate-400 mt-1">How many copies would you like to generate? (1-11)</p>
+                </div>
+                <div class="flex items-center justify-center gap-4 mb-6">
+                    <button onclick="changeCopies(-1)" class="w-10 h-10 rounded-full bg-slate-800 text-slate-300 hover:text-cyan-400 hover:bg-slate-700 transition flex items-center justify-center active:scale-90"><i class="fa-solid fa-minus"></i></button>
+                    <input type="number" id="inpCopies" value="11" min="1" max="11" class="w-20 text-center bg-slate-950 border border-slate-700 text-white font-bold text-xl py-2 rounded-xl focus:outline-none focus:border-cyan-400">
+                    <button onclick="changeCopies(1)" class="w-10 h-10 rounded-full bg-slate-800 text-slate-300 hover:text-cyan-400 hover:bg-slate-700 transition flex items-center justify-center active:scale-90"><i class="fa-solid fa-plus"></i></button>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <button onclick="closeCopiesModal(false)" class="py-2.5 rounded-xl font-bold text-xs text-slate-400 bg-slate-800 hover:bg-slate-700 hover:text-white transition-colors">CANCEL</button>
+                    <button onclick="closeCopiesModal(true)" class="py-2.5 rounded-xl font-bold text-xs text-slate-900 bg-cyan-400 hover:bg-cyan-300 shadow-[0_0_15px_rgba(0,255,255,0.4)] transition-all">GENERATE</button>
+                </div>
+            </div>
+        </div>
 
         <!-- OpenCV async load -->
         <script async src="https://docs.opencv.org/4.8.0/opencv.js" onload="onOpenCvReady()"
@@ -573,6 +637,7 @@
         <script>
             // --- Global State ---
             let cvReady = false;
+            let editingItemId = null;
             let currentSide = 'front';
             let rawImageObj = null;
             let cropperPoints = [];
@@ -580,6 +645,46 @@
             let scaleFactor = 1;
             let editorZoom = 1;
             let renderScale = 1;
+
+            let copiesModalResolve = null;
+
+            function askForCopies() {
+                return new Promise(resolve => {
+                    copiesModalResolve = resolve;
+                    const modal = document.getElementById('copiesModal');
+                    const content = document.getElementById('copiesModalContent');
+                    modal.classList.remove('hidden');
+                    requestAnimationFrame(() => {
+                        modal.classList.remove('opacity-0');
+                        content.classList.remove('scale-95');
+                    });
+                });
+            }
+
+            function changeCopies(delta) {
+                const inp = document.getElementById('inpCopies');
+                let val = parseInt(inp.value) || 1;
+                val += delta;
+                if (val < 1) val = 1;
+                if (val > 11) val = 11;
+                inp.value = val;
+            }
+
+            function closeCopiesModal(confirmed) {
+                const modal = document.getElementById('copiesModal');
+                const content = document.getElementById('copiesModalContent');
+                modal.classList.add('opacity-0');
+                content.classList.add('scale-95');
+                
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                    if (copiesModalResolve) {
+                        const val = parseInt(document.getElementById('inpCopies').value) || 1;
+                        copiesModalResolve(confirmed ? val : 0);
+                        copiesModalResolve = null;
+                    }
+                }, 300);
+            }
 
             let currentPrintMode = 'idcard'; // idcard, large, a4
 
@@ -721,6 +826,29 @@
                 drawEditor();
             }
 
+            function passportCrop() {
+                if (!rawImageObj) return;
+                const w = cropCanvas.width;
+                const h = cropCanvas.height;
+                let cropW, cropH;
+                if (w / h > 3.5 / 4.5) {
+                    cropH = h * 0.9;
+                    cropW = cropH * (3.5 / 4.5);
+                } else {
+                    cropW = w * 0.9;
+                    cropH = cropW * (4.5 / 3.5);
+                }
+                const cx = w / 2;
+                const cy = h / 2;
+                cropperPoints = [
+                    { x: cx - cropW/2, y: cy - cropH/2 },
+                    { x: cx + cropW/2, y: cy - cropH/2 },
+                    { x: cx + cropW/2, y: cy + cropH/2 },
+                    { x: cx - cropW/2, y: cy + cropH/2 }
+                ];
+                drawEditor();
+            }
+
             function addNewPage() {
                 pages.push([]);
                 activePageIndex = pages.length - 1;
@@ -730,9 +858,12 @@
             }
 
             function setActivePage(index) {
+                const changed = activePageIndex !== index;
                 activePageIndex = index;
-                renderQueueList();
-                renderA4();
+                if (changed) {
+                    renderQueueList();
+                    renderA4();
+                }
                 scrollToPage(index);
             }
 
@@ -743,12 +874,14 @@
 
             function setPrintMode(mode) {
                 currentPrintMode = mode;
-                ['idcard', 'large', 'a4'].forEach(m => {
+                ['idcard', '4x6', 'large', 'a4'].forEach(m => {
                     const btn = document.getElementById('btnMode' + m.charAt(0).toUpperCase() + m.slice(1));
-                    if (m === mode) {
-                        btn.classList.add('active');
-                    } else {
-                        btn.classList.remove('active');
+                    if (btn) {
+                        if (m === mode) {
+                            btn.classList.add('active');
+                        } else {
+                            btn.classList.remove('active');
+                        }
                     }
                 });
                 renderA4();
@@ -800,6 +933,7 @@
             const workspace = document.getElementById('editorWorkspace');
 
             function openEditor() {
+                editingItemId = null;
                 document.getElementById('editorModal').classList.remove('hidden');
 
                 // Fit image to screen workspace area
@@ -861,6 +995,7 @@
                 editorZoom = initScale;
                 applyEditorZoom();
                 setFilter('magic'); 
+                renderEditorPager();
                 drawEditor();
             }
 
@@ -876,6 +1011,123 @@
                 highlightCanvas = null;
                 highlightCtx = null;
                 strokePath = [];
+                editingItemId = null;
+            }
+
+            function startItemAdjust(id) {
+                document.getElementById('editorModal').classList.remove('hidden');
+                loadItemIntoEditor(id);
+            }
+
+            function loadItemIntoEditor(id) {
+                const item = pages[activePageIndex].find(i => i.id == id);
+                if (!item) return;
+
+                editingItemId = item.id;
+                currentSide = item.side;
+                
+                // Set the raw image
+                const img = new Image();
+                img.onload = () => {
+                    rawImageObj = img;
+                    
+                    // Fit image to screen workspace area (similar to openEditor)
+                    const isMobile = window.innerWidth < 768;
+                    const sidebarW = isMobile ? 0 : 320;
+                    const sidebarH = isMobile ? window.innerHeight * 0.5 : 0;
+                    const padX = isMobile ? 40 : 100;
+                    const padY = isMobile ? 40 : 100;
+
+                    const maxW = window.innerWidth - sidebarW - padX;
+                    const maxH = window.innerHeight - sidebarH - padY - 60; // offset for the pager bottom bar
+
+                    renderScale = Math.min(1.0, 1200 / Math.max(img.width, img.height));
+                    const editW = img.width * renderScale;
+                    const editH = img.height * renderScale;
+
+                    let initScale = Math.min(Math.max(10, maxW) / editW, Math.max(10, maxH) / editH);
+                    if (initScale > 1) initScale = 1;
+
+                    cropCanvas.width = editW;
+                    cropCanvas.height = editH;
+
+                    cachedBgCanvas = document.getElementById('bgCanvas');
+                    cachedBgCanvas.width = editW;
+                    cachedBgCanvas.height = editH;
+                    cachedBgCanvas.getContext('2d').clearRect(0, 0, editW, editH);
+                    cachedBgCanvas.getContext('2d').drawImage(img, 0, 0, editW, editH);
+
+                    paintCanvas = document.getElementById('paintCanvas');
+                    paintCanvas.width = editW;
+                    paintCanvas.height = editH;
+                    paintCtx = paintCanvas.getContext('2d');
+                    paintCtx.clearRect(0, 0, editW, editH);
+
+                    highlightCanvas = document.getElementById('highlightCanvas');
+                    highlightCanvas.width = editW;
+                    highlightCanvas.height = editH;
+                    highlightCtx = highlightCanvas.getContext('2d');
+                    highlightCtx.clearRect(0, 0, editW, editH);
+
+                    // Load saved crop points or use default
+                    if (item.cropPoints) {
+                        cropperPoints = item.cropPoints.map(p => ({ x: p.x, y: p.y }));
+                    } else {
+                        const w = cropCanvas.width;
+                        const h = cropCanvas.height;
+                        const pX = w * 0.05;
+                        const pY = h * 0.05;
+                        cropperPoints = [
+                            { x: pX, y: pY },
+                            { x: w - pX, y: pY },
+                            { x: w - pX, y: h - pY },
+                            { x: pX, y: h - pY }
+                        ];
+                    }
+
+                    editorZoom = initScale;
+                    applyEditorZoom();
+
+                    // Load saved filters or default
+                    if (item.filterValues) {
+                        document.getElementById('inpBright').value = item.filterValues.bright;
+                        document.getElementById('inpContrast').value = item.filterValues.contrast;
+                        document.getElementById('inpSaturation').value = item.filterValues.saturation;
+                        document.getElementById('inpSharpness').value = item.filterValues.sharpness;
+                        document.getElementById('inpExposure').value = item.filterValues.exposure;
+                        setFilter(item.filterValues.filter);
+                    } else {
+                        setFilter('magic');
+                    }
+
+                    renderEditorPager();
+                    drawEditor();
+                };
+                img.src = item.origSrc || item.src;
+            }
+
+            function renderEditorPager() {
+                const scrollContainer = document.getElementById('editorThumbScroll');
+                if (!scrollContainer) return;
+                
+                const pageItems = pages[activePageIndex];
+                if (!pageItems || pageItems.length === 0) {
+                    scrollContainer.innerHTML = `<span class="text-[10px] text-slate-500">No other photos in page</span>`;
+                    return;
+                }
+                
+                scrollContainer.innerHTML = '';
+                pageItems.forEach((item, index) => {
+                    const isCurrent = item.id == editingItemId;
+                    const borderClass = isCurrent ? 'border-cyan-400 ring-2 ring-cyan-400' : 'border-slate-700 hover:border-slate-400';
+                    const imgHtml = `
+                        <div onclick="loadItemIntoEditor('${item.id}')" class="w-12 h-12 rounded-lg overflow-hidden border-2 cursor-pointer transition shrink-0 ${borderClass} relative group bg-slate-900 flex items-center justify-center">
+                            <img src="${item.src}" class="w-full h-full object-cover">
+                            <span class="absolute bottom-0 inset-x-0 bg-slate-950/80 text-[8px] font-bold text-center py-0.5 text-slate-300 group-hover:text-white">#${index + 1}</span>
+                        </div>
+                    `;
+                    scrollContainer.insertAdjacentHTML('beforeend', imgHtml);
+                });
             }
 
             function zoomEditor(factor) {
@@ -945,6 +1197,58 @@
             window.addEventListener('mouseup', endDrag);
             window.addEventListener('touchend', endDrag);
 
+            function scaleCropSelection(factor) {
+                if (!cropperPoints || cropperPoints.length < 4) return;
+                const center = cropperPoints.reduce((acc, p) => ({ x: acc.x + p.x / 4, y: acc.y + p.y / 4 }), { x: 0, y: 0 });
+                let newPoints = cropperPoints.map(p => ({
+                    x: center.x + (p.x - center.x) * factor,
+                    y: center.y + (p.y - center.y) * factor
+                }));
+                // Keep within boundaries of the cropCanvas
+                let allInBounds = true;
+                newPoints.forEach(p => {
+                    if (p.x < 0 || p.x > cropCanvas.width || p.y < 0 || p.y > cropCanvas.height) {
+                        allInBounds = false;
+                    }
+                });
+                if (!allInBounds) {
+                    newPoints = newPoints.map(p => ({
+                        x: Math.max(0, Math.min(cropCanvas.width, p.x)),
+                        y: Math.max(0, Math.min(cropCanvas.height, p.y))
+                    }));
+                }
+                cropperPoints = newPoints;
+                drawEditor();
+            }
+
+            workspace.addEventListener('wheel', (e) => {
+                if (e.target.closest('button')) return;
+                e.preventDefault();
+                if (e.ctrlKey) {
+                    const factor = e.deltaY < 0 ? 1.05 : 0.95;
+                    scaleCropSelection(factor);
+                } else {
+                    if (e.deltaY < 0) {
+                        zoomEditor(1.1);
+                    } else {
+                        zoomEditor(1 / 1.1);
+                    }
+                }
+            }, { passive: false });
+
+            function pointInPolygon(point, vs) {
+                let x = point.x, y = point.y;
+                let inside = false;
+                for (let i = 0, j = vs.length - 1; i < vs.length; j = i++) {
+                    let xi = vs[i].x, yi = vs[i].y;
+                    let xj = vs[j].x, yj = vs[j].y;
+                    let intersect = ((yi > y) != (yj > y))
+                        && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+                    if (intersect) inside = !inside;
+                }
+                return inside;
+            }
+
             function startDrag(e) {
                 // Ignore clicks on zoom controls
                 if (e.target.closest('button')) return;
@@ -1003,9 +1307,20 @@
                     });
                 }
 
+                // 3. Check if inside polygon
+                if (draggingPointIndex === -1) {
+                    if (pointInPolygon(pos, cropperPoints)) {
+                        draggingPointIndex = 8; // Special index for entire polygon
+                        dragStartPos = pos;
+                        dragStartPoints = cropperPoints.map(p => ({x: p.x, y: p.y}));
+                    }
+                }
+
                 if (draggingPointIndex !== -1) {
                     e.preventDefault();
-                    if (draggingPointIndex >= 4) {
+                    if (draggingPointIndex === 8) {
+                        // Already handled dragStartPos and dragStartPoints
+                    } else if (draggingPointIndex >= 4) {
                         dragStartPos = pos;
                         const edges = [[0,1], [1,2], [2,3], [3,0]];
                         const edgeIdx = draggingPointIndex - 4;
@@ -1065,6 +1380,28 @@
                     pos.x = Math.max(0, Math.min(cropCanvas.width, pos.x));
                     pos.y = Math.max(0, Math.min(cropCanvas.height, pos.y));
                     cropperPoints[draggingPointIndex] = pos;
+                } else if (draggingPointIndex === 8) {
+                    const dx = pos.x - dragStartPos.x;
+                    const dy = pos.y - dragStartPos.y;
+                    
+                    let newPoints = dragStartPoints.map(p => ({x: p.x + dx, y: p.y + dy}));
+                    
+                    let minX = Math.min(...newPoints.map(p => p.x));
+                    let maxX = Math.max(...newPoints.map(p => p.x));
+                    let minY = Math.min(...newPoints.map(p => p.y));
+                    let maxY = Math.max(...newPoints.map(p => p.y));
+                    
+                    let shiftX = 0;
+                    let shiftY = 0;
+                    if (minX < 0) shiftX = -minX;
+                    if (maxX > cropCanvas.width) shiftX = cropCanvas.width - maxX;
+                    if (minY < 0) shiftY = -minY;
+                    if (maxY > cropCanvas.height) shiftY = cropCanvas.height - maxY;
+                    
+                    for (let i=0; i<4; i++) {
+                        cropperPoints[i].x = newPoints[i].x + shiftX;
+                        cropperPoints[i].y = newPoints[i].y + shiftY;
+                    }
                 } else {
                     // Edge dragging
                     const edges = [[0,1], [1,2], [2,3], [3,0]];
@@ -1106,23 +1443,27 @@
                             drawEditor();
 
                             // Magnifier Logic
-                            magCanvas.style.display = 'block';
-
-                            let magX = clientX - 90;
-                            let magY = clientY - 220;
-                            if (magY < 10) magY = clientY + 40; // Flip below if off-screen top
-
-                            magCanvas.style.left = magX + 'px';
-                            magCanvas.style.top = magY + 'px';
-
-                            if (draggingPointIndex < 4) {
-                                updateMagnifier(cropperPoints[draggingPointIndex].x, cropperPoints[draggingPointIndex].y);
+                            if (draggingPointIndex === 8) {
+                                magCanvas.style.display = 'none'; // Reduce lag on full crop move
                             } else {
-                                const edges = [[0,1], [1,2], [2,3], [3,0]];
-                                const edgeIdx = draggingPointIndex - 4;
-                                const midX = (cropperPoints[edges[edgeIdx][0]].x + cropperPoints[edges[edgeIdx][1]].x) / 2;
-                                const midY = (cropperPoints[edges[edgeIdx][0]].y + cropperPoints[edges[edgeIdx][1]].y) / 2;
-                                updateMagnifier(midX, midY);
+                                magCanvas.style.display = 'block';
+
+                                let magX = clientX - 90;
+                                let magY = clientY - 220;
+                                if (magY < 10) magY = clientY + 40; // Flip below if off-screen top
+
+                                magCanvas.style.left = magX + 'px';
+                                magCanvas.style.top = magY + 'px';
+
+                                if (draggingPointIndex < 4) {
+                                    updateMagnifier(cropperPoints[draggingPointIndex].x, cropperPoints[draggingPointIndex].y);
+                                } else {
+                                    const edges = [[0,1], [1,2], [2,3], [3,0]];
+                                    const edgeIdx = draggingPointIndex - 4;
+                                    const midX = (cropperPoints[edges[edgeIdx][0]].x + cropperPoints[edges[edgeIdx][1]].x) / 2;
+                                    const midY = (cropperPoints[edges[edgeIdx][0]].y + cropperPoints[edges[edgeIdx][1]].y) / 2;
+                                    updateMagnifier(midX, midY);
+                                }
                             }
                         } finally {
                             window.pendingCropDraw = false;
@@ -1328,6 +1669,9 @@
                 else if (type === 'carbon_black') { vals = { b: -20, c: 50, sat: 0, sh: 15, exp: -10 }; activeBaseFilter = 'grayscale(100%)'; }
                 else if (type === 'color_pop') vals = { b: 10, c: 40, sat: 160, sh: 5, exp: 0 };
                 else if (type === 'color_effect') { vals = { b: 5, c: 15, sat: 130, sh: 5, exp: 5 }; activeBaseFilter = 'sepia(40%) hue-rotate(-10deg)'; }
+                else if (type === 'skin_warm') { vals = { b: 15, c: 10, sat: 115, sh: 3, exp: 8 }; activeBaseFilter = 'sepia(10%) contrast(105%)'; }
+                else if (type === 'skin_cool') { vals = { b: 12, c: 15, sat: 110, sh: 4, exp: 5 }; activeBaseFilter = 'hue-rotate(5deg) brightness(105%)'; }
+                else if (type === 'skin_bright') { vals = { b: 25, c: 5, sat: 125, sh: 5, exp: 10 }; activeBaseFilter = 'contrast(95%) saturate(105%)'; }
 
                 document.getElementById('inpBright').value = vals.b;
                 document.getElementById('inpContrast').value = vals.c;
@@ -1441,7 +1785,7 @@
                 document.getElementById('loaderScreen').classList.remove('hidden', 'opacity-0');
                 document.getElementById('loaderText').innerText = "PROCESSING HIGH-RES IMAGE...";
 
-                setTimeout(() => {
+                setTimeout(async () => {
                     try {
                         // Canvas coordinates are natively in edit scale! Map back to original!
                         const scaleBack = 1 / renderScale;
@@ -1477,32 +1821,66 @@
                             outH *= 2;
                         }
 
-                        // Merge paintCanvas with rawImageObj at original resolution
-                        const mergeCanvas = document.createElement('canvas');
-                        mergeCanvas.width = rawImageObj.width;
-                        mergeCanvas.height = rawImageObj.height;
-                        const mCtx = mergeCanvas.getContext('2d');
-                        mCtx.drawImage(rawImageObj, 0, 0);
+                        // Determine bounding box of crop points
+                        const xs = srcCoords.map(p => p.x);
+                        const ys = srcCoords.map(p => p.y);
+                        let minX = Math.floor(Math.min(...xs));
+                        let maxX = Math.ceil(Math.max(...xs));
+                        let minY = Math.floor(Math.min(...ys));
+                        let maxY = Math.ceil(Math.max(...ys));
+
+                        // Clamp to raw image dimensions
+                        minX = Math.max(0, minX);
+                        maxX = Math.min(rawImageObj.width, maxX);
+                        minY = Math.max(0, minY);
+                        maxY = Math.min(rawImageObj.height, maxY);
+
+                        const cropWidth = maxX - minX;
+                        const cropHeight = maxY - minY;
+
+                        if (cropWidth <= 0 || cropHeight <= 0) {
+                            throw new Error("Invalid crop selection area");
+                        }
+
+                        // Create smaller cropped canvas containing region of interest
+                        const croppedMergeCanvas = document.createElement('canvas');
+                        croppedMergeCanvas.width = cropWidth;
+                        croppedMergeCanvas.height = cropHeight;
+                        const cmCtx = croppedMergeCanvas.getContext('2d');
+
+                        // Draw cropped raw image
+                        cmCtx.drawImage(rawImageObj, minX, minY, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight);
+
+                        // Draw paint and highlight markings cropped similarly
                         if (paintCanvas) {
-                            mCtx.drawImage(paintCanvas, 0, 0, paintCanvas.width, paintCanvas.height, 0, 0, mergeCanvas.width, mergeCanvas.height);
+                            const minXEdit = minX * renderScale;
+                            const minYEdit = minY * renderScale;
+                            const cropWidthEdit = cropWidth * renderScale;
+                            const cropHeightEdit = cropHeight * renderScale;
+                            cmCtx.drawImage(paintCanvas, minXEdit, minYEdit, cropWidthEdit, cropHeightEdit, 0, 0, cropWidth, cropHeight);
                         }
                         if (highlightCanvas) {
-                            mCtx.save();
-                            mCtx.globalAlpha = 0.4;
-                            mCtx.globalCompositeOperation = 'multiply';
-                            mCtx.drawImage(highlightCanvas, 0, 0, highlightCanvas.width, highlightCanvas.height, 0, 0, mergeCanvas.width, mergeCanvas.height);
-                            mCtx.restore();
+                            const minXEdit = minX * renderScale;
+                            const minYEdit = minY * renderScale;
+                            const cropWidthEdit = cropWidth * renderScale;
+                            const cropHeightEdit = cropHeight * renderScale;
+                            cmCtx.save();
+                            cmCtx.globalAlpha = 0.4;
+                            cmCtx.globalCompositeOperation = 'multiply';
+                            cmCtx.drawImage(highlightCanvas, minXEdit, minYEdit, cropWidthEdit, cropHeightEdit, 0, 0, cropWidth, cropHeight);
+                            cmCtx.restore();
                         }
 
-                        // Perform OpenCV Transform
-                        const src = cv.imread(mergeCanvas);
+                        // Perform OpenCV Transform on the cropped region
+                        const src = cv.imread(croppedMergeCanvas);
                         const dst = new cv.Mat();
 
+                        // Adjust coordinates relative to the crop origin (minX, minY)
                         let srcTri = cv.matFromArray(4, 1, cv.CV_32FC2, [
-                            srcCoords[0].x, srcCoords[0].y,
-                            srcCoords[1].x, srcCoords[1].y,
-                            srcCoords[2].x, srcCoords[2].y,
-                            srcCoords[3].x, srcCoords[3].y
+                            srcCoords[0].x - minX, srcCoords[0].y - minY,
+                            srcCoords[1].x - minX, srcCoords[1].y - minY,
+                            srcCoords[2].x - minX, srcCoords[2].y - minY,
+                            srcCoords[3].x - minX, srcCoords[3].y - minY
                         ]);
 
                         let dstTri = cv.matFromArray(4, 1, cv.CV_32FC2, [
@@ -1543,20 +1921,99 @@
 
                         const dataUrl = finalCanvas.toDataURL('image/jpeg', 1.0);
 
-                        // Initial sizes and coords
+                        let rotatedDataUrl = null;
+                        if (currentPrintMode === '4x6') {
+                            const rotCanvas = document.createElement('canvas');
+                            rotCanvas.width = outH;
+                            rotCanvas.height = outW;
+                            const rCtx = rotCanvas.getContext('2d');
+                            rCtx.translate(rotCanvas.width / 2, rotCanvas.height / 2);
+                            rCtx.rotate(-Math.PI / 2);
+                            rCtx.drawImage(finalCanvas, -outW / 2, -outH / 2);
+                            rotatedDataUrl = rotCanvas.toDataURL('image/jpeg', 1.0);
+                        }
+
+                        // Initial sizes and coords with page boundary check
                         let x = 10, y = 10, defW = 85.6, defH = 54;
-                        if (currentPrintMode !== 'idcard') {
+                        if (currentPrintMode !== 'idcard' && currentPrintMode !== '4x6') {
                             const aspect = outW / outH;
-                            defW = currentPrintMode === 'a4' ? 180 : 100;
+                            const maxW = currentPrintMode === 'a4' ? 190 : 100;
+                            const maxH = 277; // Margins top/bottom of A4: 297 - 20
+                            defW = maxW;
                             defH = defW / aspect;
+                            if (defH > maxH) {
+                                defH = maxH;
+                                defW = defH * aspect;
+                            }
                             x = (210 - defW) / 2;
                             y = (297 - defH) / 2;
                         }
 
-                        // Add to processing queue
-                        addToQueue(currentSide, dataUrl, x, y, defW, defH);
-
-                        closeEditor();
+                        // Add to processing queue or update existing item in place
+                        if (editingItemId) {
+                            const item = pages[activePageIndex].find(i => i.id == editingItemId);
+                            if (item) {
+                                item.src = dataUrl;
+                                item.rotSrc = rotatedDataUrl;
+                                item.cropPoints = cropperPoints.map(p => ({ x: p.x, y: p.y }));
+                                item.filterValues = {
+                                    bright: parseInt(document.getElementById('inpBright').value),
+                                    contrast: parseInt(document.getElementById('inpContrast').value),
+                                    saturation: parseInt(document.getElementById('inpSaturation').value),
+                                    sharpness: parseInt(document.getElementById('inpSharpness').value),
+                                    exposure: parseInt(document.getElementById('inpExposure').value),
+                                    filter: currentFilter
+                                };
+                            }
+                            renderQueueList();
+                            renderA4();
+                            closeEditor();
+                        } else {
+                            if (currentPrintMode === '4x6') {
+                                document.getElementById('loaderScreen').classList.add('hidden');
+                                document.getElementById('loaderText').innerText = "LOADING ENGINE...";
+                                let copies = await askForCopies();
+                                if (copies > 0) {
+                                    for(let i=0; i<copies; i++) {
+                                        addToQueue(currentSide, dataUrl, 10, 10, 28, 36, rotatedDataUrl);
+                                        const lastItem = pages[activePageIndex][pages[activePageIndex].length - 1];
+                                        if (lastItem) {
+                                            lastItem.origSrc = rawImageObj ? rawImageObj.src : dataUrl;
+                                            lastItem.cropPoints = cropperPoints.map(p => ({ x: p.x, y: p.y }));
+                                            lastItem.filterValues = {
+                                                bright: parseInt(document.getElementById('inpBright').value),
+                                                contrast: parseInt(document.getElementById('inpContrast').value),
+                                                saturation: parseInt(document.getElementById('inpSaturation').value),
+                                                sharpness: parseInt(document.getElementById('inpSharpness').value),
+                                                exposure: parseInt(document.getElementById('inpExposure').value),
+                                                filter: currentFilter
+                                            };
+                                        }
+                                    }
+                                    closeEditor();
+                                } else {
+                                    // Cancelled, stay in editor
+                                }
+                            } else {
+                                addToQueue(currentSide, dataUrl, x, y, defW, defH);
+                                const lastItem = pages[activePageIndex][pages[activePageIndex].length - 1];
+                                if (lastItem) {
+                                    lastItem.origSrc = rawImageObj ? rawImageObj.src : dataUrl;
+                                    lastItem.cropPoints = cropperPoints.map(p => ({ x: p.x, y: p.y }));
+                                    lastItem.filterValues = {
+                                        bright: parseInt(document.getElementById('inpBright').value),
+                                        contrast: parseInt(document.getElementById('inpContrast').value),
+                                        saturation: parseInt(document.getElementById('inpSaturation').value),
+                                        sharpness: parseInt(document.getElementById('inpSharpness').value),
+                                        exposure: parseInt(document.getElementById('inpExposure').value),
+                                        filter: currentFilter
+                                    };
+                                }
+                                closeEditor();
+                                document.getElementById('loaderScreen').classList.add('hidden');
+                                document.getElementById('loaderText').innerText = "LOADING ENGINE...";
+                            }
+                        }
                     } catch (e) {
                         console.error(e);
                         alert("An error occurred during processing.");
@@ -1568,8 +2025,8 @@
             }
 
             // --- Queue & A4 Layout Management ---
-            function addToQueue(side, dataUrl, x = 10, y = 10, w = 85.6, h = 54) {
-                pages[activePageIndex].push({ id: Date.now(), side, src: dataUrl, x, y, w, h });
+            function addToQueue(side, dataUrl, x = 10, y = 10, w = 85.6, h = 54, rotSrc = null) {
+                pages[activePageIndex].push({ id: Date.now() + Math.random(), side, src: dataUrl, x, y, w, h, rotSrc });
 
                 // Update thumbnail indicator
                 const thumb = side === 'front' ? document.getElementById('thumbFront') : document.getElementById('thumbBack');
@@ -1596,7 +2053,7 @@
             }
 
             function remItem(id) {
-                pages[activePageIndex] = pages[activePageIndex].filter(item => item.id !== id);
+                pages[activePageIndex] = pages[activePageIndex].filter(item => item.id != id);
                 renderQueueList();
                 renderA4();
             }
@@ -1649,17 +2106,90 @@
                 if (!container) return;
 
                 const main = document.getElementById('mainArea');
-                const currentScroll = main ? main.scrollLeft : 0;
 
-                container.innerHTML = '';
+                // Adjust the number of page wrapper elements in the DOM dynamically
+                const currentWrappers = container.querySelectorAll('.a4-wrapper');
+                const diff = pages.length - currentWrappers.length;
 
+                if (diff > 0) {
+                    // Append new wrappers
+                    for (let pIndex = currentWrappers.length; pIndex < pages.length; pIndex++) {
+                        let paperW = 210, paperH = 297;
+                        if (currentPrintMode === '4x6') {
+                            paperW = 101.6; paperH = 152.4;
+                        }
+                        const wrapperHtml = `
+                            <div id="pageWrap_${pIndex}" onclick="setActivePage(${pIndex})" class="a4-wrapper relative snap-center shrink-0 transition-all duration-500" style="overflow: visible; background-color: #fff; z-index: 10; width: ${paperW}mm; height: ${paperH}mm;">
+                                <div class="a4-preview bg-white absolute top-0 left-0 origin-top-left" style="width: ${paperW}mm; height: ${paperH}mm;"></div>
+                            </div>
+                        `;
+                        container.insertAdjacentHTML('beforeend', wrapperHtml);
+                    }
+                } else if (diff < 0) {
+                    // Remove extra wrappers from the end
+                    for (let i = 0; i < Math.abs(diff); i++) {
+                        if (container.lastElementChild) {
+                            container.lastElementChild.remove();
+                        }
+                    }
+                }
+
+                // Now update all pages content and classes
                 pages.forEach((pageItems, pIndex) => {
                     const isActive = pIndex === activePageIndex;
-                    const glowClass = isActive ? "shadow-[0_0_40px_rgba(0,255,255,0.4)] ring-4 ring-cyan-400" : "shadow-[0_0_30px_rgba(0,0,0,0.8)] opacity-40 cursor-pointer hover:opacity-70 scale-95";
-                    const wrapperScale = isActive ? "scale-100" : "scale-95";
+                    const wrapEl = document.getElementById(`pageWrap_${pIndex}`);
+                    if (!wrapEl) return;
 
+                    // Update click handler in case index changes or just set once
+                    wrapEl.onclick = () => setActivePage(pIndex);
+
+                    // Update wrapper sizes based on print mode in case it changed
+                    let paperW = 210, paperH = 297;
+                    if (currentPrintMode === '4x6') {
+                        paperW = 101.6; paperH = 152.4;
+                    }
+                    wrapEl.style.width = `${paperW}mm`;
+                    wrapEl.style.height = `${paperH}mm`;
+                    
+                    const previewEl = wrapEl.querySelector('.a4-preview');
+                    if (previewEl) {
+                        previewEl.style.width = `${paperW}mm`;
+                        previewEl.style.height = `${paperH}mm`;
+                    }
+
+                    // Update active/inactive classes
+                    if (isActive) {
+                        wrapEl.classList.remove('shadow-[0_0_30px_rgba(0,0,0,0.8)]', 'opacity-40', 'cursor-pointer', 'hover:opacity-70', 'scale-95');
+                        wrapEl.classList.add('shadow-[0_0_40px_rgba(0,255,255,0.4)]', 'ring-4', 'ring-cyan-400', 'scale-100');
+                        wrapEl.style.zIndex = '20';
+                    } else {
+                        wrapEl.classList.remove('shadow-[0_0_40px_rgba(0,255,255,0.4)]', 'ring-4', 'ring-cyan-400', 'scale-100');
+                        wrapEl.classList.add('shadow-[0_0_30px_rgba(0,0,0,0.8)]', 'opacity-40', 'cursor-pointer', 'hover:opacity-70', 'scale-95');
+                        wrapEl.style.zIndex = '10';
+                    }
+
+                    // Generate items HTML
                     let itemsHtml = '';
-                    if (currentPrintMode === 'idcard') {
+                    if (currentPrintMode === '4x6') {
+                        itemsHtml = `<div class="absolute inset-0 pointer-events-none" style="background: white;">`;
+                        pageItems.forEach((item, i) => {
+                            if (i >= 11) return;
+                            let isRotated = i >= 9;
+                            let imgX, imgY, imgW, imgH;
+                            if (!isRotated) {
+                                let row = Math.floor(i / 3); let col = i % 3;
+                                imgW = 28; imgH = 36; imgX = 4.4 + col * 32.4; imgY = 3.0 + row * 39.0;
+                            } else {
+                                let idx = i - 9;
+                                imgW = 36; imgH = 28; imgX = 9.8 + idx * 46.0; imgY = 121.0;
+                            }
+                            let src = (isRotated && item.rotSrc) ? item.rotSrc : item.src;
+                            itemsHtml += `<div id="qitem_${item.id}" style="position:absolute; left:${imgX}mm; top:${imgY}mm; width:${imgW}mm; height:${imgH}mm;" class="qitem pointer-events-auto shadow-sm">
+                                <img src="${src}" class="w-full h-full block object-fill border border-black" draggable="false" onpointerdown="selectItem('${item.id}')">
+                            </div>`;
+                        });
+                        itemsHtml += `</div>`;
+                    } else if (currentPrintMode === 'idcard') {
                         itemsHtml = `<div class="absolute inset-0 content-start" style="padding-top: 15mm; padding-left: 14.4mm; padding-right: 14.4mm; display: grid; grid-template-columns: 85.6mm 85.6mm; gap: 10mm; pointer-events: none;">`;
                         pageItems.forEach(item => {
                             itemsHtml += `<div style="width: 85.6mm; height: 54mm;" class="bg-white pointer-events-auto"><img src="${item.src}" class="w-full h-full object-cover"></div>`;
@@ -1668,32 +2198,27 @@
                     } else {
                         itemsHtml = `<div class="absolute inset-0 pointer-events-none">`;
                         pageItems.forEach(item => {
-                            if (currentPrintMode === 'large') {
+                            if (currentPrintMode === 'large' || currentPrintMode === 'a4') {
+                                const showEdge = currentPrintMode !== 'a4' ? '' : 'style="display: none !important;"';
                                 itemsHtml += `
-                        <div id="qitem_${item.id}" style="position:absolute; left:${item.x}mm; top:${item.y}mm; width:${item.w}mm; height:${item.h}mm;" class="qitem group hover:border-cyan-400 touch-none shadow-sm border border-dashed border-transparent pointer-events-auto ${isActive ? '' : 'pointer-events-none'} ${selectedItemId === item.id ? 'is-selected' : ''}">
-                            <img src="${item.src}" class="w-full h-full block" draggable="false" style="cursor:move;" onpointerdown="startItemDrag(event, ${item.id}, ${pIndex})">
+                        <div id="qitem_${item.id}" style="position:absolute; left:${item.x}mm; top:${item.y}mm; width:${item.w}mm; height:${item.h}mm;" class="qitem group hover:border-cyan-400 touch-none shadow-sm border border-dashed border-transparent pointer-events-auto ${isActive ? '' : 'pointer-events-none'} ${selectedItemId == item.id ? 'is-selected' : ''}">
+                            <img src="${item.src}" class="w-full h-full block" draggable="false" style="cursor:move;" onpointerdown="startItemDrag(event, '${item.id}', ${pIndex})">
                             
                             <!-- Toolbar -->
                             <div class="item-controls absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-800 border border-slate-600 rounded shadow-lg hidden group-hover:flex items-center gap-3 px-3 py-1.5 z-20">
-                                <button title="Rotate 90° (Portrait/Landscape)" onpointerdown="(function(e){ e.preventDefault(); e.stopPropagation(); rotateItem(${item.id}, ${pIndex}); })(event)" class="text-slate-300 hover:text-cyan-400 text-xs font-bold flex items-center gap-1 transition-colors"><i class="fa-solid fa-rotate-right"></i> Rotate</button>
+                                <button title="Rotate 90° (Portrait/Landscape)" onpointerdown="(function(e){ e.preventDefault(); e.stopPropagation(); rotateItem('${item.id}', ${pIndex}); })(event)" class="text-slate-300 hover:text-cyan-400 text-xs font-bold flex items-center gap-1 transition-colors"><i class="fa-solid fa-rotate-right"></i> Rotate</button>
+                                <button title="Adjust Crop & Skin Tone" onpointerdown="(function(e){ e.preventDefault(); e.stopPropagation(); startItemAdjust('${item.id}'); })(event)" class="text-slate-300 hover:text-cyan-400 text-xs font-bold flex items-center gap-1 transition-colors"><i class="fa-solid fa-crop-simple"></i> Adjust</button>
                             </div>
 
                             <!-- 8 Resize Handles -->
-                            <div class="item-handle absolute -top-1.5 -left-1.5 w-3 h-3 bg-white border border-slate-800 cursor-nw-resize hidden group-hover:block touch-none shadow-[0_0_5px_rgba(0,0,0,0.5)] z-10" onpointerdown="startItemResize(event, ${item.id}, ${pIndex}, 'nw')"></div>
-                            <div class="item-handle absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white border border-slate-800 cursor-n-resize hidden group-hover:block touch-none shadow-[0_0_5px_rgba(0,0,0,0.5)] z-10" onpointerdown="startItemResize(event, ${item.id}, ${pIndex}, 'n')"></div>
-                            <div class="item-handle absolute -top-1.5 -right-1.5 w-3 h-3 bg-white border border-slate-800 cursor-ne-resize hidden group-hover:block touch-none shadow-[0_0_5px_rgba(0,0,0,0.5)] z-10" onpointerdown="startItemResize(event, ${item.id}, ${pIndex}, 'ne')"></div>
-                            <div class="item-handle absolute top-1/2 -translate-y-1/2 -left-1.5 w-3 h-3 bg-white border border-slate-800 cursor-w-resize hidden group-hover:block touch-none shadow-[0_0_5px_rgba(0,0,0,0.5)] z-10" onpointerdown="startItemResize(event, ${item.id}, ${pIndex}, 'w')"></div>
-                            <div class="item-handle absolute top-1/2 -translate-y-1/2 -right-1.5 w-3 h-3 bg-white border border-slate-800 cursor-e-resize hidden group-hover:block touch-none shadow-[0_0_5px_rgba(0,0,0,0.5)] z-10" onpointerdown="startItemResize(event, ${item.id}, ${pIndex}, 'e')"></div>
-                            <div class="item-handle absolute -bottom-1.5 -left-1.5 w-3 h-3 bg-white border border-slate-800 cursor-sw-resize hidden group-hover:block touch-none shadow-[0_0_5px_rgba(0,0,0,0.5)] z-10" onpointerdown="startItemResize(event, ${item.id}, ${pIndex}, 'sw')"></div>
-                            <div class="item-handle absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white border border-slate-800 cursor-s-resize hidden group-hover:block touch-none shadow-[0_0_5px_rgba(0,0,0,0.5)] z-10" onpointerdown="startItemResize(event, ${item.id}, ${pIndex}, 's')"></div>
-                            <div class="item-handle absolute -bottom-1.5 -right-1.5 w-3 h-3 bg-cyan-400 rounded-full border border-slate-800 cursor-se-resize hidden group-hover:block touch-none shadow-[0_0_10px_rgba(0,255,255,0.8)] z-10" onpointerdown="startItemResize(event, ${item.id}, ${pIndex}, 'se')"></div>
-                        </div>
-                    `;
-                            } else if (currentPrintMode === 'a4') {
-                                itemsHtml += `
-                        <div id="qitem_${item.id}" style="position:absolute; left:${item.x}mm; top:${item.y}mm; width:${item.w}mm; height:${item.h}mm;" class="qitem group hover:border-cyan-400 touch-none shadow-sm border border-dashed border-transparent pointer-events-auto ${isActive ? '' : 'pointer-events-none'} ${selectedItemId === item.id ? 'is-selected' : ''}">
-                            <img src="${item.src}" class="w-full h-full block" draggable="false" style="cursor:move;" onpointerdown="startItemDrag(event, ${item.id}, ${pIndex})">
-                            <div class="item-handle absolute -bottom-1.5 -right-1.5 w-4 h-4 bg-cyan-400 rounded-full cursor-se-resize hidden group-hover:block touch-none shadow-[0_0_10px_rgba(0,255,255,0.8)] z-10" onpointerdown="startItemResize(event, ${item.id}, ${pIndex})"></div>
+                            <div class="item-handle absolute -top-1.5 -left-1.5 w-3 h-3 bg-white border border-slate-800 cursor-nw-resize hidden group-hover:block touch-none shadow-[0_0_5px_rgba(0,0,0,0.5)] z-10" onpointerdown="startItemResize(event, '${item.id}', ${pIndex}, 'nw')"></div>
+                            <div class="item-handle absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white border border-slate-800 cursor-n-resize hidden group-hover:block touch-none shadow-[0_0_5px_rgba(0,0,0,0.5)] z-10" ${showEdge} onpointerdown="startItemResize(event, '${item.id}', ${pIndex}, 'n')"></div>
+                            <div class="item-handle absolute -top-1.5 -right-1.5 w-3 h-3 bg-white border border-slate-800 cursor-ne-resize hidden group-hover:block touch-none shadow-[0_0_5px_rgba(0,0,0,0.5)] z-10" onpointerdown="startItemResize(event, '${item.id}', ${pIndex}, 'ne')"></div>
+                            <div class="item-handle absolute top-1/2 -translate-y-1/2 -left-1.5 w-3 h-3 bg-white border border-slate-800 cursor-w-resize hidden group-hover:block touch-none shadow-[0_0_5px_rgba(0,0,0,0.5)] z-10" ${showEdge} onpointerdown="startItemResize(event, '${item.id}', ${pIndex}, 'w')"></div>
+                            <div class="item-handle absolute top-1/2 -translate-y-1/2 -right-1.5 w-3 h-3 bg-white border border-slate-800 cursor-e-resize hidden group-hover:block touch-none shadow-[0_0_5px_rgba(0,0,0,0.5)] z-10" ${showEdge} onpointerdown="startItemResize(event, '${item.id}', ${pIndex}, 'e')"></div>
+                            <div class="item-handle absolute -bottom-1.5 -left-1.5 w-3 h-3 bg-white border border-slate-800 cursor-sw-resize hidden group-hover:block touch-none shadow-[0_0_5px_rgba(0,0,0,0.5)] z-10" onpointerdown="startItemResize(event, '${item.id}', ${pIndex}, 'sw')"></div>
+                            <div class="item-handle absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white border border-slate-800 cursor-s-resize hidden group-hover:block touch-none shadow-[0_0_5px_rgba(0,0,0,0.5)] z-10" ${showEdge} onpointerdown="startItemResize(event, '${item.id}', ${pIndex}, 's')"></div>
+                            <div class="item-handle absolute -bottom-1.5 -right-1.5 w-3 h-3 bg-cyan-400 rounded-full border border-slate-800 cursor-se-resize hidden group-hover:block touch-none shadow-[0_0_10px_rgba(0,255,255,0.8)] z-10" onpointerdown="startItemResize(event, '${item.id}', ${pIndex}, 'se')"></div>
                         </div>
                     `;
                             }
@@ -1701,14 +2226,9 @@
                         itemsHtml += `</div>`;
                     }
 
-                    const wrapperHtml = `
-            <div id="pageWrap_${pIndex}" onclick="if(!${isActive}) setActivePage(${pIndex})" class="a4-wrapper relative snap-center shrink-0 transition-all duration-500 ${glowClass} ${wrapperScale}" style="overflow: visible; background-color: #fff; z-index: ${isActive ? 20 : 10};">
-                <div class="a4-preview bg-white absolute top-0 left-0 origin-top-left" style="width: 210mm; height: 297mm;">
-                    ${itemsHtml}
-                </div>
-            </div>
-        `;
-                    container.insertAdjacentHTML('beforeend', wrapperHtml);
+                    if (previewEl) {
+                        previewEl.innerHTML = itemsHtml;
+                    }
                 });
 
                 const indicator = document.getElementById('pageIndicator');
@@ -1717,30 +2237,45 @@
                 // Mirror Print Container
                 const printC = document.getElementById('printContainer');
                 printC.innerHTML = pages.map(pageItems => {
-                    if (currentPrintMode === 'idcard') {
+                    if (currentPrintMode === '4x6') {
+                        let html = `<div style="position: relative; width: 101.6mm; height: 152.4mm; background: white; page-break-after: always; overflow: hidden;">`;
+                        pageItems.forEach((item, i) => {
+                            if (i >= 11) return;
+                            let isRotated = i >= 9;
+                            let imgX, imgY, imgW, imgH;
+                            if (!isRotated) {
+                                let row = Math.floor(i / 3); let col = i % 3;
+                                imgW = 28; imgH = 36; imgX = 4.4 + col * 32.4; imgY = 3.0 + row * 39.0;
+                            } else {
+                                let idx = i - 9;
+                                imgW = 36; imgH = 28; imgX = 9.8 + idx * 46.0; imgY = 121.0;
+                            }
+                            let src = (isRotated && item.rotSrc) ? item.rotSrc : item.src;
+                            html += `<div style="position: absolute; left: ${imgX}mm; top: ${imgY}mm; width: ${imgW}mm; height: ${imgH}mm;"><img src="${src}" style="width:100%; height:100%; object-fit:fill; border: 1px solid black; box-sizing: border-box;"></div>`;
+                        });
+                        html += `</div>`;
+                        return html;
+                    } else if (currentPrintMode === 'idcard') {
                         return `
-            <div style="width: 210mm; min-height: 297mm; padding-top: 15mm; padding-left: 14.4mm; padding-right: 14.4mm; display: grid; grid-template-columns: 85.6mm 85.6mm; column-gap: 10mm; row-gap: 10mm; align-content: start; page-break-after: always; background: white;">
+            <div style="width: 210mm; height: 297mm; overflow: hidden; padding-top: 15mm; padding-left: 14.4mm; padding-right: 14.4mm; display: grid; grid-template-columns: 85.6mm 85.6mm; column-gap: 10mm; row-gap: 10mm; align-content: start; page-break-after: always; background: white;">
                 ${pageItems.map(item => `<div style="width: 85.6mm; height: 54mm;"><img src="${item.src}" style="width:100%; height:100%; object-fit:cover;"></div>`).join('')}
             </div>`;
                     } else {
                         return `
-            <div style="position: relative; width: 210mm; min-height: 297mm; background: white; page-break-after: always;">
+            <div style="position: relative; width: 210mm; height: 297mm; overflow: hidden; background: white; page-break-after: always;">
                 ${pageItems.map(item => `<div style="position: absolute; left: ${item.x}mm; top: ${item.y}mm; width: ${item.w}mm; height: ${item.h}mm;"><img src="${item.src}" style="width:100%; height:100%; object-fit:fill;"></div>`).join('')}
             </div>`;
                     }
                 }).join('');
 
                 resizeA4();
-                if (main) {
-                    main.scrollLeft = currentScroll;
-                }
             }
 
             function startItemDrag(e, id, pIndex) {
                 if (pIndex !== activePageIndex) return;
                 selectItem(id);
                 e.preventDefault();
-                const item = pages[pIndex].find(i => i.id === id);
+                const item = pages[pIndex].find(i => i.id == id);
                 activeItemDrag = { item, startX: e.clientX, startY: e.clientY, initX: item.x, initY: item.y };
             }
 
@@ -1748,13 +2283,13 @@
                 if (pIndex !== activePageIndex) return;
                 selectItem(id);
                 e.preventDefault(); e.stopPropagation();
-                const item = pages[pIndex].find(i => i.id === id);
+                const item = pages[pIndex].find(i => i.id == id);
                 activeItemResize = { item, startX: e.clientX, startY: e.clientY, initX: item.x, initY: item.y, initW: item.w, initH: item.h, direction, aspect: item.w / item.h };
             }
 
             function rotateItem(id, pIndex) {
                 selectItem(id);
-                const item = pages[pIndex].find(i => i.id === id);
+                const item = pages[pIndex].find(i => i.id == id);
                 if (!item) return;
 
                 const img = new Image();
@@ -1811,32 +2346,58 @@
                     let dir = activeItemResize.direction;
                     let { item, initX, initY, initW, initH, aspect } = activeItemResize;
 
-                    if (dir) {
-                        if (dir.includes('e')) {
-                            item.w = Math.max(10, initW + dx);
-                        }
-                        if (dir.includes('s')) {
-                            item.h = Math.max(10, initH + dy);
-                        }
-                        if (dir.includes('w')) {
-                            let newW = initW - dx;
-                            if (newW >= 10) {
-                                item.w = newW;
-                                item.x = initX + dx;
-                            }
-                        }
-                        if (dir.includes('n')) {
-                            let newH = initH - dy;
-                            if (newH >= 10) {
-                                item.h = newH;
-                                item.y = initY + dy;
-                            }
+                    if (currentPrintMode === 'a4') {
+                        // Keep aspect ratio for A4 mode resizing
+                        if (dir === 'se') {
+                            let newW = Math.max(10, initW + dx);
+                            item.w = newW;
+                            item.h = newW / aspect;
+                        } else if (dir === 'sw') {
+                            let newW = Math.max(10, initW - dx);
+                            item.w = newW;
+                            item.h = newW / aspect;
+                            item.x = initX + (initW - newW);
+                        } else if (dir === 'ne') {
+                            let newW = Math.max(10, initW + dx);
+                            item.w = newW;
+                            item.h = newW / aspect;
+                            item.y = initY + (initH - item.h);
+                        } else if (dir === 'nw') {
+                            let newW = Math.max(10, initW - dx);
+                            item.w = newW;
+                            item.h = newW / aspect;
+                            item.x = initX + (initW - newW);
+                            item.y = initY + (initH - item.h);
                         }
                     } else {
-                        let newW = initW + dx;
-                        if (newW < 10) newW = 10;
-                        item.w = newW;
-                        item.h = newW / aspect;
+                        // Free transform (flat or tall) for Large Doc and others
+                        if (dir) {
+                            if (dir.includes('e')) {
+                                item.w = Math.max(10, initW + dx);
+                            }
+                            if (dir.includes('s')) {
+                                item.h = Math.max(10, initH + dy);
+                            }
+                            if (dir.includes('w')) {
+                                let newW = initW - dx;
+                                if (newW >= 10) {
+                                    item.w = newW;
+                                    item.x = initX + dx;
+                                }
+                            }
+                            if (dir.includes('n')) {
+                                let newH = initH - dy;
+                                if (newH >= 10) {
+                                    item.h = newH;
+                                    item.y = initY + dy;
+                                }
+                            }
+                        } else {
+                            let newW = initW + dx;
+                            if (newW < 10) newW = 10;
+                            item.w = newW;
+                            item.h = newW / aspect;
+                        }
                     }
 
                     const el = document.getElementById(`qitem_${item.id}`);
@@ -1859,7 +2420,7 @@
                         
                         // Move to next page if dragged right
                         if (centerX > 210) {
-                            pages[activePageIndex] = pages[activePageIndex].filter(i => i.id !== item.id);
+                            pages[activePageIndex] = pages[activePageIndex].filter(i => i.id != item.id);
                             item.x = item.x - 220; // 210mm width + 10mm visual gap approx
                             if (activePageIndex === pages.length - 1) {
                                 pages.push([]);
@@ -1870,7 +2431,7 @@
                         } 
                         // Move to previous page if dragged left
                         else if (centerX < 0 && activePageIndex > 0) {
-                            pages[activePageIndex] = pages[activePageIndex].filter(i => i.id !== item.id);
+                            pages[activePageIndex] = pages[activePageIndex].filter(i => i.id != item.id);
                             item.x = item.x + 220; 
                             pages[activePageIndex - 1].push(item);
                             activePageIndex--;
@@ -1888,7 +2449,7 @@
                     
                     renderA4(); // Update print mirror and UI
                 }
-            });
+            });;
 
             // --- Export Functions ---
             function printSheet() {
@@ -1903,8 +2464,9 @@
                     if (pageItems.length === 0) return;
 
                     const canvas = document.createElement('canvas');
-                    canvas.width = 2480;
-                    canvas.height = 3508;
+                    let is4x6 = currentPrintMode === '4x6';
+                    canvas.width = is4x6 ? 1200 : 2480;
+                    canvas.height = is4x6 ? 1800 : 3508;
                     const ctx = canvas.getContext('2d');
 
                     ctx.fillStyle = "white";
@@ -1917,9 +2479,24 @@
 
                     const draws = pageItems.map((item, i) => {
                         return new Promise(resolve => {
+                            let isRotated = is4x6 && i >= 9;
+                            let srcToLoad = (isRotated && item.rotSrc) ? item.rotSrc : item.src;
+
                             const img = new Image();
                             img.onload = () => {
-                                if (currentPrintMode === 'idcard') {
+                                if (is4x6) {
+                                    if (i < 11) {
+                                        let imgX, imgY, imgW, imgH;
+                                        if (!isRotated) {
+                                            let row = Math.floor(i / 3); let col = i % 3;
+                                            imgW = 28; imgH = 36; imgX = 4.4 + col * 32.4; imgY = 3.0 + row * 39.0;
+                                        } else {
+                                            let idx = i - 9;
+                                            imgW = 36; imgH = 28; imgX = 9.8 + idx * 46.0; imgY = 121.0;
+                                        }
+                                        ctx.drawImage(img, imgX * 11.811, imgY * 11.811, imgW * 11.811, imgH * 11.811);
+                                    }
+                                } else if (currentPrintMode === 'idcard') {
                                     ctx.drawImage(img, x, y, TARGET_W, TARGET_H);
                                     if (i % 2 === 0) {
                                         x += TARGET_W + 118;
@@ -1933,7 +2510,7 @@
                                 }
                                 resolve();
                             };
-                            img.src = item.src;
+                            img.src = srcToLoad;
                         });
                     });
 
@@ -1951,10 +2528,12 @@
                 if (!window.jspdf) return alert("jsPDF is still loading...");
 
                 const { jsPDF } = window.jspdf;
-                const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+                const is4x6 = currentPrintMode === '4x6';
+                const formatStr = is4x6 ? [101.6, 152.4] : 'a4';
+                const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: formatStr });
 
                 pages.forEach((pageItems, pIndex) => {
-                    if (pIndex > 0) doc.addPage();
+                    if (pIndex > 0) doc.addPage(formatStr, 'portrait');
 
                     let startX = 14.4;
                     let startY = 15;
@@ -1965,7 +2544,22 @@
                     let y = startY;
 
                     pageItems.forEach((item, i) => {
-                        if (currentPrintMode === 'idcard') {
+                        let isRotated = is4x6 && i >= 9;
+                        let srcToLoad = (isRotated && item.rotSrc) ? item.rotSrc : item.src;
+
+                        if (is4x6) {
+                            if (i < 11) {
+                                let imgX, imgY, imgW, imgH;
+                                if (!isRotated) {
+                                    let row = Math.floor(i / 3); let col = i % 3;
+                                    imgW = 28; imgH = 36; imgX = 4.4 + col * 32.4; imgY = 3.0 + row * 39.0;
+                                } else {
+                                    let idx = i - 9;
+                                    imgW = 36; imgH = 28; imgX = 9.8 + idx * 46.0; imgY = 121.0;
+                                }
+                                doc.addImage(srcToLoad, 'JPEG', imgX, imgY, imgW, imgH);
+                            }
+                        } else if (currentPrintMode === 'idcard') {
                             doc.addImage(item.src, 'JPEG', x, y, 85.6, 54);
                             if (i % 2 === 0) {
                                 x += 85.6 + gapX;
@@ -1987,19 +2581,23 @@
                 const main = document.getElementById('mainArea');
                 if (!main) return;
 
-                const a4W = 793.7;
-                const a4H = 1122.5;
+                let paperW = 793.7;
+                let paperH = 1122.5;
+                if (currentPrintMode === '4x6') {
+                    paperW = 384; // 4 inches at 96 DPI
+                    paperH = 576; // 6 inches at 96 DPI
+                }
 
                 const padding = 80;
                 const availableW = main.clientWidth - padding;
                 const availableH = main.clientHeight - padding;
 
-                let scale = Math.min(availableW / a4W, availableH / a4H);
+                let scale = Math.min(availableW / paperW, availableH / paperH);
                 if (scale > 1.2) scale = 1.2;
 
                 document.querySelectorAll('.a4-wrapper').forEach(wrapper => {
-                    wrapper.style.width = `${a4W * scale}px`;
-                    wrapper.style.height = `${a4H * scale}px`;
+                    wrapper.style.width = `${paperW * scale}px`;
+                    wrapper.style.height = `${paperH * scale}px`;
                 });
 
                 document.querySelectorAll('.a4-preview').forEach(a4 => {
@@ -2021,7 +2619,13 @@
                 event.target.value = '';
             }
 
-            function processDirectFiles(files) {
+            async function processDirectFiles(files) {
+                let copies = 1;
+                if (currentPrintMode === '4x6') {
+                    copies = await askForCopies();
+                    if (copies === 0) return;
+                }
+
                 Array.from(files).forEach(file => {
                     if (file.type.startsWith('image/')) {
                         const url = URL.createObjectURL(file);
@@ -2029,10 +2633,16 @@
                         img.onload = () => {
                             let defW = 85.6, defH = 54;
                             let x = 10, y = 10;
-                            if (currentPrintMode !== 'idcard') {
+                            if (currentPrintMode !== 'idcard' && currentPrintMode !== '4x6') {
                                 const aspect = img.width / img.height;
-                                defW = currentPrintMode === 'a4' ? 180 : 100;
+                                const maxW = currentPrintMode === 'a4' ? 190 : 100;
+                                const maxH = 277; // maximum printable height
+                                defW = maxW;
                                 defH = defW / aspect;
+                                if (defH > maxH) {
+                                    defH = maxH;
+                                    defW = defH * aspect;
+                                }
                                 x = (210 - defW) / 2;
                                 y = (297 - defH) / 2;
                             }
@@ -2042,11 +2652,102 @@
                             const ctx = canvas.getContext('2d');
                             ctx.drawImage(img, 0, 0);
                             const dataUrl = canvas.toDataURL('image/png');
-                            addToQueue('front', dataUrl, x, y, defW, defH);
+
+                            let rotatedDataUrl = null;
+                            if (currentPrintMode === '4x6') {
+                                const rotCanvas = document.createElement('canvas');
+                                rotCanvas.width = img.height;
+                                rotCanvas.height = img.width;
+                                const rCtx = rotCanvas.getContext('2d');
+                                rCtx.translate(rotCanvas.width / 2, rotCanvas.height / 2);
+                                rCtx.rotate(-Math.PI / 2);
+                                rCtx.drawImage(canvas, -img.width / 2, -img.height / 2);
+                                rotatedDataUrl = rotCanvas.toDataURL('image/png');
+                            }
+
+                            if (currentPrintMode === '4x6') {
+                                for(let i=0; i<copies; i++) {
+                                    addToQueue('front', dataUrl, 10, 10, 28, 36, rotatedDataUrl);
+                                }
+                            } else {
+                                addToQueue('front', dataUrl, x, y, defW, defH);
+                            }
                         };
                         img.src = url;
                     }
                 });
+            }
+
+            async function handleMultiplePassportUpload(event) {
+                const files = event.target.files;
+                if (!files || files.length === 0) return;
+                
+                // Show processing indicator
+                document.getElementById('loaderScreen').classList.remove('hidden', 'opacity-0');
+                document.getElementById('loaderText').innerText = "GENERATING 11-IN-1 PASSPORT SHEET...";
+                
+                // Switch mode to 4x6 passport
+                setPrintMode('4x6');
+                
+                // Process each file (max 11 photos to fit 4x6 layout)
+                const fileList = Array.from(files).slice(0, 11);
+                
+                try {
+                    for (let i = 0; i < fileList.length; i++) {
+                        const file = fileList[i];
+                        const url = URL.createObjectURL(file);
+                        await new Promise((resolve) => {
+                            const img = new Image();
+                            img.onload = () => {
+                                // Auto crop the image to passport ratio (3.5/4.5 or 28/36) at original resolution
+                                const canvas = document.createElement('canvas');
+                                let cropW = img.width;
+                                let cropH = img.height;
+                                let aspect = 28 / 36; // passport ratio
+                                
+                                if (img.width / img.height > aspect) {
+                                    // Image is too wide
+                                    cropW = img.height * aspect;
+                                } else {
+                                    // Image is too tall
+                                    cropH = img.width / aspect;
+                                }
+                                
+                                const cx = (img.width - cropW) / 2;
+                                const cy = (img.height - cropH) / 2;
+                                
+                                // Render portrait cropped passport photo
+                                canvas.width = 280; // nice high resolution for A4
+                                canvas.height = 360;
+                                const ctx = canvas.getContext('2d');
+                                ctx.drawImage(img, cx, cy, cropW, cropH, 0, 0, 280, 360);
+                                const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
+                                
+                                // Render landscape/rotated version (for slots 9 and 10 which are rotated)
+                                const rotCanvas = document.createElement('canvas');
+                                rotCanvas.width = 360;
+                                rotCanvas.height = 280;
+                                const rCtx = rotCanvas.getContext('2d');
+                                rCtx.translate(180, 140);
+                                rCtx.rotate(-Math.PI / 2);
+                                rCtx.drawImage(canvas, -140, -180);
+                                const rotatedDataUrl = rotCanvas.toDataURL('image/jpeg', 0.95);
+                                
+                                // Add to queue with original color
+                                addToQueue('front', dataUrl, 10, 10, 28, 36, rotatedDataUrl);
+                                resolve();
+                            };
+                            img.src = url;
+                        });
+                    }
+                } catch (e) {
+                    console.error(e);
+                    alert("An error occurred during multiple passport generation.");
+                } finally {
+                    document.getElementById('loaderScreen').classList.add('hidden');
+                    document.getElementById('loaderText').innerText = "LOADING ENGINE...";
+                    event.target.value = '';
+                }
             }
 
             document.addEventListener('paste', (e) => {
@@ -2108,6 +2809,673 @@
                     }
                 }
             });
+
+            // ==========================================
+            // ADDED FOR ALL-PHOTO PAGING, 11-PHOTO LIMITS,
+            // AND PASSPORT FACE/SHOULDERS ALIGNMENT GUIDES
+            // ==========================================
+
+            // 1. Global image element cache for lag-free performance
+            const rawImageCache = new Map();
+
+            // Helper to pre-cache image URLs when added or loaded
+            function cacheImageUrl(url) {
+                if (!url || rawImageCache.has(url)) return;
+                const img = new Image();
+                img.onload = () => {
+                    rawImageCache.set(url, img);
+                };
+                img.src = url;
+            }
+
+            // 2. Redefined renderEditorPager to show all photos across all pages
+            window.renderEditorPager = function() {
+                const scrollContainer = document.getElementById('editorThumbScroll');
+                if (!scrollContainer) return;
+                
+                scrollContainer.innerHTML = '';
+                let totalItemsCount = 0;
+                
+                pages.forEach((pageItems, pIndex) => {
+                    pageItems.forEach((item, itemIndex) => {
+                        totalItemsCount++;
+                        const isCurrent = item.id == editingItemId;
+                        const borderClass = isCurrent ? 'border-cyan-400 ring-2 ring-cyan-400 scale-105' : 'border-slate-700 hover:border-slate-400';
+                        
+                        // Ensure the item's original image starts caching in the background
+                        if (item.origSrc) cacheImageUrl(item.origSrc);
+                        if (item.src) cacheImageUrl(item.src);
+                        
+                        const imgHtml = `
+                            <div onclick="loadItemIntoEditor('${item.id}')" id="pager_thumb_${item.id}" class="w-14 h-14 rounded-lg overflow-hidden border-2 cursor-pointer transition-all duration-200 shrink-0 ${borderClass} relative group bg-slate-900 flex items-center justify-center">
+                                <img src="${item.src}" class="w-full h-full object-cover">
+                                <span class="absolute bottom-0 inset-x-0 bg-slate-950/90 text-[8px] font-black text-center py-0.5 text-slate-300 group-hover:text-white tracking-tighter">P${pIndex + 1} #${itemIndex + 1}</span>
+                            </div>
+                        `;
+                        scrollContainer.insertAdjacentHTML('beforeend', imgHtml);
+                        
+                        // Scroll current item into view smoothly
+                        if (isCurrent) {
+                            setTimeout(() => {
+                                const thumbEl = document.getElementById(`pager_thumb_${item.id}`);
+                                if (thumbEl) {
+                                    thumbEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                                }
+                            }, 50);
+                        }
+                    });
+                });
+                
+                if (totalItemsCount === 0) {
+                    scrollContainer.innerHTML = `<span class="text-[10px] text-slate-500">No photos in any page</span>`;
+                }
+            };
+
+            // 3. Redefined loadItemIntoEditor to find items across all pages and load them instantly via cache
+            window.loadItemIntoEditor = function(id) {
+                let item = null;
+                let foundPageIndex = -1;
+                
+                // Search across all pages
+                for (let p = 0; p < pages.length; p++) {
+                    const found = pages[p].find(i => i.id == id);
+                    if (found) {
+                        item = found;
+                        foundPageIndex = p;
+                        break;
+                    }
+                }
+                if (!item) return;
+
+                editingItemId = item.id;
+                currentSide = item.side;
+                
+                // Automatically switch focus page in background if it's on a different page
+                if (foundPageIndex !== activePageIndex) {
+                    activePageIndex = foundPageIndex;
+                    renderQueueList();
+                    renderA4();
+                }
+
+                const src = item.origSrc || item.src;
+                
+                const setupEditorWithImage = (img) => {
+                    rawImageObj = img;
+                    
+                    const isMobile = window.innerWidth < 768;
+                    const sidebarW = isMobile ? 0 : 320;
+                    const sidebarH = isMobile ? window.innerHeight * 0.5 : 0;
+                    const padX = isMobile ? 40 : 100;
+                    const padY = isMobile ? 40 : 100;
+
+                    const maxW = window.innerWidth - sidebarW - padX;
+                    const maxH = window.innerHeight - sidebarH - padY - 60; // offset for the pager bottom bar
+
+                    renderScale = Math.min(1.0, 1200 / Math.max(img.width, img.height));
+                    const editW = img.width * renderScale;
+                    const editH = img.height * renderScale;
+
+                    let initScale = Math.min(Math.max(10, maxW) / editW, Math.max(10, maxH) / editH);
+                    if (initScale > 1) initScale = 1;
+
+                    cropCanvas.width = editW;
+                    cropCanvas.height = editH;
+
+                    cachedBgCanvas = document.getElementById('bgCanvas');
+                    cachedBgCanvas.width = editW;
+                    cachedBgCanvas.height = editH;
+                    cachedBgCanvas.getContext('2d').clearRect(0, 0, editW, editH);
+                    cachedBgCanvas.getContext('2d').drawImage(img, 0, 0, editW, editH);
+
+                    paintCanvas = document.getElementById('paintCanvas');
+                    paintCanvas.width = editW;
+                    paintCanvas.height = editH;
+                    paintCtx = paintCanvas.getContext('2d');
+                    paintCtx.clearRect(0, 0, editW, editH);
+
+                    highlightCanvas = document.getElementById('highlightCanvas');
+                    highlightCanvas.width = editW;
+                    highlightCanvas.height = editH;
+                    highlightCtx = highlightCanvas.getContext('2d');
+                    highlightCtx.clearRect(0, 0, editW, editH);
+
+                    // Load saved crop points or use default
+                    if (item.cropPoints) {
+                        cropperPoints = item.cropPoints.map(p => ({ x: p.x, y: p.y }));
+                    } else {
+                        const w = cropCanvas.width;
+                        const h = cropCanvas.height;
+                        const pX = w * 0.05;
+                        const pY = h * 0.05;
+                        cropperPoints = [
+                            { x: pX, y: pY },
+                            { x: w - pX, y: pY },
+                            { x: w - pX, y: h - pY },
+                            { x: pX, y: h - pY }
+                        ];
+                    }
+
+                    editorZoom = initScale;
+                    applyEditorZoom();
+
+                    // Load saved filters or default
+                    if (item.filterValues) {
+                        document.getElementById('inpBright').value = item.filterValues.bright;
+                        document.getElementById('inpContrast').value = item.filterValues.contrast;
+                        document.getElementById('inpSaturation').value = item.filterValues.saturation;
+                        document.getElementById('inpSharpness').value = item.filterValues.sharpness;
+                        document.getElementById('inpExposure').value = item.filterValues.exposure;
+                        setFilter(item.filterValues.filter);
+                    } else {
+                        setFilter('magic');
+                    }
+
+                    renderEditorPager();
+                    drawEditor();
+                    styleSkinToneButtons();
+                };
+
+                // Check cache first to avoid load latency (completely lag-free)
+                if (rawImageCache.has(src)) {
+                    setupEditorWithImage(rawImageCache.get(src));
+                } else {
+                    const img = new Image();
+                    img.onload = () => {
+                        rawImageCache.set(src, img);
+                        setupEditorWithImage(img);
+                    };
+                    img.src = src;
+                }
+            };
+
+            // 4. Batch cropping queue variables
+            window.batchUploadQueue = [];
+            window.isBatchCropping = false;
+
+            // 5. Redefined handleMultiplePassportUpload to initiate batch crop-first flow
+            window.handleMultiplePassportUpload = function(event) {
+                const files = event.target.files;
+                if (!files || files.length === 0) return;
+                
+                setPrintMode('4x6');
+                
+                // Store all selected files in the batch queue and set status flags
+                window.batchUploadQueue = Array.from(files);
+                window.isBatchCropping = true;
+                
+                // Show the modal crop window and trigger loading the first photo
+                document.getElementById('editorModal').classList.remove('hidden');
+                window.loadNextBatchPhoto();
+                
+                event.target.value = '';
+            };
+
+            // 6. Helper to load the next file in the batch queue into the cropper
+            window.loadNextBatchPhoto = function() {
+                if (!window.batchUploadQueue || window.batchUploadQueue.length === 0) {
+                    window.isBatchCropping = false;
+                    closeEditor();
+                    return;
+                }
+                
+                const nextFile = window.batchUploadQueue.shift();
+                const url = URL.createObjectURL(nextFile);
+                
+                const img = new Image();
+                img.onload = () => {
+                    rawImageCache.set(url, img);
+                    rawImageObj = img;
+                    
+                    // Clear modal editing ID because we are adding a new crop
+                    editingItemId = null;
+                    currentSide = 'front';
+                    
+                    // Fit image to screen workspace area
+                    const isMobile = window.innerWidth < 768;
+                    const sidebarW = isMobile ? 0 : 320;
+                    const sidebarH = isMobile ? window.innerHeight * 0.5 : 0;
+                    const padX = isMobile ? 40 : 100;
+                    const padY = isMobile ? 40 : 100;
+
+                    const maxW = window.innerWidth - sidebarW - padX;
+                    const maxH = window.innerHeight - sidebarH - padY - 60; // offset for the pager bottom bar
+
+                    renderScale = Math.min(1.0, 1200 / Math.max(img.width, img.height));
+                    const editW = img.width * renderScale;
+                    const editH = img.height * renderScale;
+
+                    let initScale = Math.min(Math.max(10, maxW) / editW, Math.max(10, maxH) / editH);
+                    if (initScale > 1) initScale = 1;
+
+                    cropCanvas.width = editW;
+                    cropCanvas.height = editH;
+
+                    cachedBgCanvas = document.getElementById('bgCanvas');
+                    cachedBgCanvas.width = editW;
+                    cachedBgCanvas.height = editH;
+                    cachedBgCanvas.getContext('2d').clearRect(0, 0, editW, editH);
+                    cachedBgCanvas.getContext('2d').drawImage(img, 0, 0, editW, editH);
+
+                    paintCanvas = document.getElementById('paintCanvas');
+                    paintCanvas.width = editW;
+                    paintCanvas.height = editH;
+                    paintCtx = paintCanvas.getContext('2d');
+                    paintCtx.clearRect(0, 0, editW, editH);
+
+                    highlightCanvas = document.getElementById('highlightCanvas');
+                    highlightCanvas.width = editW;
+                    highlightCanvas.height = editH;
+                    highlightCtx = highlightCanvas.getContext('2d');
+                    highlightCtx.clearRect(0, 0, editW, editH);
+
+                    // Initialize crop points (using passport aspect ratio)
+                    const w = cropCanvas.width;
+                    const h = cropCanvas.height;
+                    let cropW, cropH;
+                    if (w / h > 28 / 36) {
+                        cropH = h * 0.9;
+                        cropW = cropH * (28 / 36);
+                    } else {
+                        cropW = w * 0.9;
+                        cropH = cropW * (36 / 28);
+                    }
+                    const cx = w / 2;
+                    const cy = h / 2;
+                    cropperPoints = [
+                        { x: cx - cropW/2, y: cy - cropH/2 },
+                        { x: cx + cropW/2, y: cy - cropH/2 },
+                        { x: cx + cropW/2, y: cy + cropH/2 },
+                        { x: cx - cropW/2, y: cy + cropH/2 }
+                    ];
+
+                    editorZoom = initScale;
+                    applyEditorZoom();
+                    setFilter('magic'); 
+                    renderEditorPager();
+                    drawEditor();
+                    styleSkinToneButtons();
+                    
+                    // Show subtle indicator overlay briefly to assist navigation
+                    document.getElementById('loaderScreen').classList.remove('hidden');
+                    document.getElementById('loaderText').innerText = `BATCH CROP: ${window.batchUploadQueue.length + 1} REMAINING`;
+                    setTimeout(() => {
+                        if (window.isBatchCropping) {
+                            document.getElementById('loaderScreen').classList.add('hidden');
+                        }
+                    }, 800);
+                };
+                img.src = url;
+            };
+
+            // 7. Passport Guide Overlay function to help guide face-to-body proportion
+            function drawPassportGuide(ctx, pts) {
+                if (!pts || pts.length < 4) return;
+                
+                // Get the bounding box of the crop selection coordinates
+                const xs = pts.map(p => p.x);
+                const ys = pts.map(p => p.y);
+                const minX = Math.min(...xs);
+                const maxX = Math.max(...xs);
+                const minY = Math.min(...ys);
+                const maxY = Math.max(...ys);
+                
+                const w = maxX - minX;
+                const h = maxY - minY;
+                const cx = minX + w / 2;
+                const cy = minY + h / 2;
+                
+                ctx.save();
+                ctx.strokeStyle = 'rgba(234, 179, 8, 0.7)'; // Glow-golden style
+                ctx.lineWidth = 1.5;
+                ctx.setLineDash([4, 4]); // Dotted lines for precision guide
+                
+                // Face Oval: Face should be 70% to 80% of passport height
+                const headRadiusX = w * 0.22;
+                const headRadiusY = h * 0.28;
+                const headCenterY = minY + h * 0.38; // Position in upper middle
+                
+                ctx.beginPath();
+                ctx.ellipse(cx, headCenterY, headRadiusX, headRadiusY, 0, 0, Math.PI * 2);
+                ctx.stroke();
+                
+                // Eye Line Guide: horizontal line passing through the middle of face oval
+                ctx.beginPath();
+                ctx.moveTo(cx - headRadiusX, headCenterY);
+                ctx.lineTo(cx + headRadiusX, headCenterY);
+                ctx.strokeStyle = 'rgba(234, 179, 8, 0.35)';
+                ctx.stroke();
+                
+                // Vertical Center Line Guide
+                ctx.beginPath();
+                ctx.moveTo(cx, minY + h * 0.05);
+                ctx.lineTo(cx, maxY - h * 0.05);
+                ctx.stroke();
+                
+                // Shoulder & Body Guides: curve indicating placement of upper body
+                ctx.beginPath();
+                ctx.moveTo(cx - w * 0.45, maxY - h * 0.12);
+                ctx.bezierCurveTo(
+                    cx - headRadiusX, maxY - h * 0.32,
+                    cx + headRadiusX, maxY - h * 0.32,
+                    cx + w * 0.45, maxY - h * 0.12
+                );
+                ctx.strokeStyle = 'rgba(234, 179, 8, 0.7)';
+                ctx.stroke();
+                
+                // Guide Text
+                ctx.fillStyle = 'rgba(234, 179, 8, 0.95)';
+                ctx.font = '900 10px Outfit, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+                ctx.shadowBlur = 4;
+                ctx.fillText('FACE AREA (70-80%)', cx, headCenterY - headRadiusY - 8);
+                ctx.fillText('SHOULDERS / BODY', cx, maxY - h * 0.04);
+                
+                ctx.restore();
+            }
+
+            // 8. Hook into original drawEditor to draw the guide on top without changing any original drawing code
+            if (typeof drawEditor === 'function') {
+                const originalDrawEditor = drawEditor;
+                window.drawEditor = function() {
+                    originalDrawEditor();
+                    if (editorTool === 'crop') {
+                        drawPassportGuide(ctx, cropperPoints);
+                    }
+                };
+            }
+
+            // 9. Redefined confirmScan supporting batch cropping flow and multi-page distribution (11-photo limit)
+            window.confirmScan = function() {
+                if (!cvReady) return alert('The high-quality processing engine is still loading in the background. Please wait a few seconds and try again!');
+
+                document.getElementById('loaderScreen').classList.remove('hidden', 'opacity-0');
+                document.getElementById('loaderText').innerText = "PROCESSING HIGH-RES IMAGE...";
+
+                setTimeout(async () => {
+                    try {
+                        // Canvas coordinates are natively in edit scale! Map back to original!
+                        const scaleBack = 1 / renderScale;
+                        const srcCoords = cropperPoints.map(p => ({
+                            x: p.x * scaleBack,
+                            y: p.y * scaleBack
+                        }));
+
+                        // Calculate crop aspect ratio
+                        const cropW = Math.max(
+                            Math.hypot(srcCoords[1].x - srcCoords[0].x, srcCoords[1].y - srcCoords[0].y),
+                            Math.hypot(srcCoords[2].x - srcCoords[3].x, srcCoords[2].y - srcCoords[3].y)
+                        );
+                        const cropH = Math.max(
+                            Math.hypot(srcCoords[3].x - srcCoords[0].x, srcCoords[3].y - srcCoords[0].y),
+                            Math.hypot(srcCoords[2].x - srcCoords[1].x, srcCoords[2].y - srcCoords[1].y)
+                        );
+
+                        let outW = TARGET_W;
+                        let outH = TARGET_H;
+
+                        if (currentPrintMode !== 'idcard') {
+                            const maxOut = isUpscale ? 3000 : 1500;
+                            if (cropW > cropH) {
+                                outW = maxOut;
+                                outH = (cropH / cropW) * maxOut;
+                            } else {
+                                outH = maxOut;
+                                outW = (cropW / cropH) * maxOut;
+                            }
+                        } else if (isUpscale) {
+                            outW *= 2;
+                            outH *= 2;
+                        }
+
+                        // Determine bounding box of crop points
+                        const xs = srcCoords.map(p => p.x);
+                        const ys = srcCoords.map(p => p.y);
+                        let minX = Math.floor(Math.min(...xs));
+                        let maxX = Math.ceil(Math.max(...xs));
+                        let minY = Math.floor(Math.min(...ys));
+                        let maxY = Math.ceil(Math.max(...ys));
+
+                        // Clamp to raw image dimensions
+                        minX = Math.max(0, minX);
+                        maxX = Math.min(rawImageObj.width, maxX);
+                        minY = Math.max(0, minY);
+                        maxY = Math.min(rawImageObj.height, maxY);
+
+                        const cropWidth = maxX - minX;
+                        const cropHeight = maxY - minY;
+
+                        if (cropWidth <= 0 || cropHeight <= 0) {
+                            throw new Error("Invalid crop selection area");
+                        }
+
+                        // Create smaller cropped canvas containing region of interest
+                        const croppedMergeCanvas = document.createElement('canvas');
+                        croppedMergeCanvas.width = cropWidth;
+                        croppedMergeCanvas.height = cropHeight;
+                        const cmCtx = croppedMergeCanvas.getContext('2d');
+
+                        // Draw cropped raw image
+                        cmCtx.drawImage(rawImageObj, minX, minY, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight);
+
+                        // Draw paint and highlight markings cropped similarly
+                        if (paintCanvas) {
+                            const minXEdit = minX * renderScale;
+                            const minYEdit = minY * renderScale;
+                            const cropWidthEdit = cropWidth * renderScale;
+                            const cropHeightEdit = cropHeight * renderScale;
+                            cmCtx.drawImage(paintCanvas, minXEdit, minYEdit, cropWidthEdit, cropHeightEdit, 0, 0, cropWidth, cropHeight);
+                        }
+                        if (highlightCanvas) {
+                            const minXEdit = minX * renderScale;
+                            const minYEdit = minY * renderScale;
+                            const cropWidthEdit = cropWidth * renderScale;
+                            const cropHeightEdit = cropHeight * renderScale;
+                            cmCtx.save();
+                            cmCtx.globalAlpha = 0.4;
+                            cmCtx.globalCompositeOperation = 'multiply';
+                            cmCtx.drawImage(highlightCanvas, minXEdit, minYEdit, cropWidthEdit, cropHeightEdit, 0, 0, cropWidth, cropHeight);
+                            cmCtx.restore();
+                        }
+
+                        // Perform OpenCV Transform on the cropped region
+                        const src = cv.imread(croppedMergeCanvas);
+                        const dst = new cv.Mat();
+
+                        // Adjust coordinates relative to the crop origin (minX, minY)
+                        let srcTri = cv.matFromArray(4, 1, cv.CV_32FC2, [
+                            srcCoords[0].x - minX, srcCoords[0].y - minY,
+                            srcCoords[1].x - minX, srcCoords[1].y - minY,
+                            srcCoords[2].x - minX, srcCoords[2].y - minY,
+                            srcCoords[3].x - minX, srcCoords[3].y - minY
+                        ]);
+
+                        let dstTri = cv.matFromArray(4, 1, cv.CV_32FC2, [
+                            0, 0,
+                            outW, 0,
+                            outW, outH,
+                            0, outH
+                        ]);
+
+                        let M = cv.getPerspectiveTransform(srcTri, dstTri);
+                        let dsize = new cv.Size(outW, outH);
+                        cv.warpPerspective(src, dst, M, dsize, cv.INTER_LINEAR, cv.BORDER_CONSTANT, new cv.Scalar());
+
+                        src.delete(); srcTri.delete(); dstTri.delete(); M.delete();
+
+                        // Render warped image to a temporary canvas to apply visual filters permanently
+                        const tempCanvas = document.createElement('canvas');
+                        tempCanvas.width = outW;
+                        tempCanvas.height = outH;
+                        cv.imshow(tempCanvas, dst);
+                        dst.delete();
+
+                        const finalCanvas = document.createElement('canvas');
+                        finalCanvas.width = outW;
+                        finalCanvas.height = outH;
+                        const fCtx = finalCanvas.getContext('2d');
+
+                        let b = parseInt(document.getElementById('inpBright').value);
+                        let c = parseInt(document.getElementById('inpContrast').value);
+                        let sat = parseInt(document.getElementById('inpSaturation').value);
+                        let exp = parseInt(document.getElementById('inpExposure').value);
+                        
+                        let totalBright = 100 + b + exp;
+                        let filterString = `${activeBaseFilter} brightness(${totalBright}%) contrast(${100 + c}%) saturate(${sat}%) url(#svgSharpen)`;
+
+                        fCtx.filter = filterString;
+                        fCtx.drawImage(tempCanvas, 0, 0);
+
+                        const dataUrl = finalCanvas.toDataURL('image/jpeg', 1.0);
+
+                        let rotatedDataUrl = null;
+                        if (currentPrintMode === '4x6') {
+                            const rotCanvas = document.createElement('canvas');
+                            rotCanvas.width = outH;
+                            rotCanvas.height = outW;
+                            const rCtx = rotCanvas.getContext('2d');
+                            rCtx.translate(rotCanvas.width / 2, rotCanvas.height / 2);
+                            rCtx.rotate(-Math.PI / 2);
+                            rCtx.drawImage(finalCanvas, -outW / 2, -outH / 2);
+                            rotatedDataUrl = rotCanvas.toDataURL('image/jpeg', 1.0);
+                        }
+
+                        // Check if we are batch cropping multi passport uploads
+                        if (window.isBatchCropping) {
+                            // Check if current page is full (11 items) and create a new page
+                            if (pages[activePageIndex] && pages[activePageIndex].length >= 11) {
+                                addNewPage();
+                            }
+
+                            // Add exactly 1 copy to layout
+                            addToQueue('front', dataUrl, 10, 10, 28, 36, rotatedDataUrl);
+
+                            const lastItem = pages[activePageIndex][pages[activePageIndex].length - 1];
+                            if (lastItem) {
+                                lastItem.origSrc = rawImageObj ? rawImageObj.src : dataUrl;
+                                lastItem.cropPoints = cropperPoints.map(p => ({ x: p.x, y: p.y }));
+                                lastItem.filterValues = {
+                                    bright: parseInt(document.getElementById('inpBright').value),
+                                    contrast: parseInt(document.getElementById('inpContrast').value),
+                                    saturation: parseInt(document.getElementById('inpSaturation').value),
+                                    sharpness: parseInt(document.getElementById('inpSharpness').value),
+                                    exposure: parseInt(document.getElementById('inpExposure').value),
+                                    filter: currentFilter
+                                };
+                            }
+
+                            // Pull the next photo from the queue
+                            window.loadNextBatchPhoto();
+                            return;
+                        }
+
+                        // Standard confirm logic below
+                        let x = 10, y = 10, defW = 85.6, defH = 54;
+                        if (currentPrintMode !== 'idcard' && currentPrintMode !== '4x6') {
+                            const aspect = outW / outH;
+                            const maxW = currentPrintMode === 'a4' ? 190 : 100;
+                            const maxH = 277;
+                            defW = maxW;
+                            defH = defW / aspect;
+                            if (defH > maxH) {
+                                defH = maxH;
+                                defW = defH * aspect;
+                            }
+                            x = (210 - defW) / 2;
+                            y = (297 - defH) / 2;
+                        }
+
+                        if (editingItemId) {
+                            const item = pages[activePageIndex].find(i => i.id == editingItemId);
+                            if (item) {
+                                item.src = dataUrl;
+                                item.rotSrc = rotatedDataUrl;
+                                item.cropPoints = cropperPoints.map(p => ({ x: p.x, y: p.y }));
+                                item.filterValues = {
+                                    bright: parseInt(document.getElementById('inpBright').value),
+                                    contrast: parseInt(document.getElementById('inpContrast').value),
+                                    saturation: parseInt(document.getElementById('inpSaturation').value),
+                                    sharpness: parseInt(document.getElementById('inpSharpness').value),
+                                    exposure: parseInt(document.getElementById('inpExposure').value),
+                                    filter: currentFilter
+                                };
+                            }
+                            renderQueueList();
+                            renderA4();
+                            closeEditor();
+                        } else {
+                            if (currentPrintMode === '4x6') {
+                                document.getElementById('loaderScreen').classList.add('hidden');
+                                document.getElementById('loaderText').innerText = "LOADING ENGINE...";
+                                let copies = await askForCopies();
+                                if (copies > 0) {
+                                    for(let i=0; i<copies; i++) {
+                                        addToQueue(currentSide, dataUrl, 10, 10, 28, 36, rotatedDataUrl);
+                                        const lastItem = pages[activePageIndex][pages[activePageIndex].length - 1];
+                                        if (lastItem) {
+                                            lastItem.origSrc = rawImageObj ? rawImageObj.src : dataUrl;
+                                            lastItem.cropPoints = cropperPoints.map(p => ({ x: p.x, y: p.y }));
+                                            lastItem.filterValues = {
+                                                bright: parseInt(document.getElementById('inpBright').value),
+                                                contrast: parseInt(document.getElementById('inpContrast').value),
+                                                saturation: parseInt(document.getElementById('inpSaturation').value),
+                                                sharpness: parseInt(document.getElementById('inpSharpness').value),
+                                                exposure: parseInt(document.getElementById('inpExposure').value),
+                                                filter: currentFilter
+                                            };
+                                        }
+                                    }
+                                    closeEditor();
+                                }
+                            } else {
+                                addToQueue(currentSide, dataUrl, x, y, defW, defH);
+                                const lastItem = pages[activePageIndex][pages[activePageIndex].length - 1];
+                                if (lastItem) {
+                                    lastItem.origSrc = rawImageObj ? rawImageObj.src : dataUrl;
+                                    lastItem.cropPoints = cropperPoints.map(p => ({ x: p.x, y: p.y }));
+                                    lastItem.filterValues = {
+                                        bright: parseInt(document.getElementById('inpBright').value),
+                                        contrast: parseInt(document.getElementById('inpContrast').value),
+                                        saturation: parseInt(document.getElementById('inpSaturation').value),
+                                        sharpness: parseInt(document.getElementById('inpSharpness').value),
+                                        exposure: parseInt(document.getElementById('inpExposure').value),
+                                        filter: currentFilter
+                                    };
+                                }
+                                closeEditor();
+                                document.getElementById('loaderScreen').classList.add('hidden');
+                                document.getElementById('loaderText').innerText = "LOADING ENGINE...";
+                            }
+                        }
+                    } catch (e) {
+                        console.error(e);
+                        alert("An error occurred during processing.");
+                    } finally {
+                        if (!window.isBatchCropping) {
+                            document.getElementById('loaderScreen').classList.add('hidden');
+                            document.getElementById('loaderText').innerText = "LOADING ENGINE...";
+                        }
+                    }
+                }, 50);
+            };
+
+            // 10. Make skin tone buttons premium and visually distinct
+            function styleSkinToneButtons() {
+                ['skin_warm', 'skin_cool', 'skin_bright'].forEach(id => {
+                    const btn = document.getElementById('filter_' + id);
+                    if (btn) {
+                        btn.style.border = '1px solid rgba(234, 179, 8, 0.6)';
+                        btn.style.background = 'rgba(234, 179, 8, 0.1)';
+                        btn.style.color = '#fbbf24';
+                        if (!btn.querySelector('.fa-wand-magic-sparkles')) {
+                            btn.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles text-[10px] text-yellow-500 mr-1.5"></i>` + btn.innerText.replace(/✨/g, '');
+                        }
+                    }
+                });
+            }
+
+            // Execute button styling on load
+            styleSkinToneButtons();
         </script>
     </div> <!-- Close App Container -->
 </body>
